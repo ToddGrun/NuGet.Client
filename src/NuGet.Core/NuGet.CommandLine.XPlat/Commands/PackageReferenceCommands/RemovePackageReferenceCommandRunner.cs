@@ -23,7 +23,7 @@ namespace NuGet.CommandLine.XPlat
             //Setup the Credential Service - This allows the msbuild sdk resolver to auth if needed.
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageReferenceArgs.Logger, !packageReferenceArgs.Interactive);
 
-            var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+            var libraryDependency = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(
                     name: packageReferenceArgs.PackageId,

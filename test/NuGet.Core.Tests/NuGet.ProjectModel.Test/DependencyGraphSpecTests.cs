@@ -451,7 +451,7 @@ namespace NuGet.ProjectModel.Test
                 new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -462,7 +462,7 @@ namespace NuGet.ProjectModel.Test
                 new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: true,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -473,7 +473,7 @@ namespace NuGet.ProjectModel.Test
                 new LibraryRange("boom", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: true,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -514,7 +514,7 @@ namespace NuGet.ProjectModel.Test
                 new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -525,7 +525,7 @@ namespace NuGet.ProjectModel.Test
                 new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -714,7 +714,7 @@ namespace NuGet.ProjectModel.Test
                 new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -737,14 +737,16 @@ namespace NuGet.ProjectModel.Test
                 FrameworkName = nugetFramework,
             };
 
-            tfi.CentralPackageVersions.Add(centralVersionFoo.Name, centralVersionFoo);
-            tfi.CentralPackageVersions.Add(centralVersionBar.Name, centralVersionBar);
+            tfi.AddCentralPackageVersions([
+                new KeyValuePair<string, CentralPackageVersion>(centralVersionFoo.Name, centralVersionFoo),
+                new KeyValuePair<string, CentralPackageVersion>(centralVersionBar.Name, centralVersionBar)
+            ]);
             LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
 
             for (int i = 0; i < centralVersionsDummyLoadCount; i++)
             {
                 var dummy = new CentralPackageVersion($"Dummy{i}", VersionRange.Parse("1.0.0"));
-                tfi.CentralPackageVersions.Add(dummy.Name, dummy);
+                tfi.AddCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>(dummy.Name, dummy)]);
             }
 
             return tfi;
@@ -762,10 +764,8 @@ namespace NuGet.ProjectModel.Test
                 Dependencies = dependencies,
             };
 
-            foreach (CentralPackageVersion cvd in centralVersionsDependencies)
-            {
-                tfi.CentralPackageVersions.Add(cvd.Name, cvd);
-            }
+            tfi.AddCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd)));
+
             LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
 
             return tfi;

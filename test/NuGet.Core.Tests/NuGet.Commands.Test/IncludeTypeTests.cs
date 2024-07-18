@@ -1776,38 +1776,42 @@ namespace NuGet.Commands.Test
                 var project2Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project2"));
                 var project3Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project3"));
 
+                var project3TargetFrameworkInformation = new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net471"),
+                    Dependencies = new List<LibraryDependency>(
+                        new[]
+                        {
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.All),
+                                VersionCentrallyManaged = true,
+                            },
+                        }),
+                };
+                project3TargetFrameworkInformation.AddCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]);
+
                 var project3Spec = PackageReferenceSpecBuilder.Create("Project3", project3Directory.FullName)
                     .WithTargetFrameworks(new[]
                     {
-                        new TargetFrameworkInformation
-                        {
-                            FrameworkName = NuGetFramework.Parse("net471"),
-                            Dependencies = new List<LibraryDependency>(
-                                new[]
-                                {
-                                    new LibraryDependency
-                                    {
-                                        LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.All),
-                                        VersionCentrallyManaged = true,
-                                    },
-                                }),
-                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
-                        }
+                        project3TargetFrameworkInformation
                     })
                     .WithCentralPackageVersionsEnabled()
                     .WithCentralPackageTransitivePinningEnabled()
                     .Build()
                     .WithTestRestoreMetadata();
 
+                var project2TargetFrameworkInformation = new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net471"),
+                    Dependencies = new List<LibraryDependency>(),
+                };
+                project2TargetFrameworkInformation.AddCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]);
+
                 var project2Spec = PackageReferenceSpecBuilder.Create("Project2", project2Directory.FullName)
                     .WithTargetFrameworks(new[]
                     {
-                        new TargetFrameworkInformation
-                        {
-                            FrameworkName = NuGetFramework.Parse("net471"),
-                            Dependencies = new List<LibraryDependency>(),
-                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
-                        }
+                        project2TargetFrameworkInformation
                     })
                     .WithCentralPackageVersionsEnabled()
                     .WithCentralPackageTransitivePinningEnabled()
@@ -1816,15 +1820,17 @@ namespace NuGet.Commands.Test
                     .WithTestProjectReference(project3Spec, privateAssets: (LibraryIncludeFlags.All & (~includeFlags)));
 
 
+                var project1TargetFrameworkInformation = new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net471"),
+                    Dependencies = new List<LibraryDependency>(),
+                };
+                project1TargetFrameworkInformation.AddCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]);
+
                 var project1Spec = PackageReferenceSpecBuilder.Create("Project1", project1Directory.FullName)
                     .WithTargetFrameworks(new[]
                     {
-                        new TargetFrameworkInformation
-                        {
-                            FrameworkName = NuGetFramework.Parse("net471"),
-                            Dependencies = new List<LibraryDependency>(),
-                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
-                        }
+                        project1TargetFrameworkInformation
                     })
                     .WithCentralPackageVersionsEnabled()
                     .WithCentralPackageTransitivePinningEnabled()

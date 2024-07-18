@@ -223,7 +223,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     new LibraryDependency
                     {
                         LibraryRange = new LibraryRange("PackageH", VersionRange.Parse("1.2.3"), LibraryDependencyTarget.Package),
-                        NoWarn = new List<NuGetLogCode> { NuGetLogCode.NU1001, NuGetLogCode.NU1006, NuGetLogCode.NU3017 }
+                        NoWarn = [ NuGetLogCode.NU1001, NuGetLogCode.NU1006, NuGetLogCode.NU3017 ]
                     },
                     new LibraryDependency
                     {

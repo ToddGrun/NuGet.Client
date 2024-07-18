@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -13,6 +14,8 @@ namespace NuGet.ProjectModel
 {
     public class TargetFrameworkInformation : IEquatable<TargetFrameworkInformation>
     {
+        private static ImmutableDictionary<string, CentralPackageVersion> EmptyCentralPackageVersions = ImmutableDictionary<string, CentralPackageVersion>.Empty.WithComparers(StringComparer.OrdinalIgnoreCase);
+
         public string TargetAlias { get; set; }
 
         public NuGetFramework FrameworkName { get; set; }
@@ -40,10 +43,12 @@ namespace NuGet.ProjectModel
         /// </summary>
         public IList<DownloadDependency> DownloadDependencies { get; }
 
+        private ImmutableDictionary<string, CentralPackageVersion> _centralPackageVersions;
+
         /// <summary>
-        /// List of the package versions defined in the Central package versions management file. 
+        /// Package versions defined in the Central package versions management file. 
         /// </summary>
-        public IDictionary<string, CentralPackageVersion> CentralPackageVersions { get; }
+        public IReadOnlyDictionary<string, CentralPackageVersion> CentralPackageVersions => _centralPackageVersions;
 
         /// <summary>
         /// A set of unique FrameworkReferences
@@ -61,7 +66,7 @@ namespace NuGet.ProjectModel
             Dependencies = new List<LibraryDependency>();
             Imports = new List<NuGetFramework>();
             DownloadDependencies = new List<DownloadDependency>();
-            CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
+            _centralPackageVersions = EmptyCentralPackageVersions;
             FrameworkReferences = new HashSet<FrameworkDependency>();
         }
 
@@ -74,7 +79,7 @@ namespace NuGet.ProjectModel
             AssetTargetFallback = cloneFrom.AssetTargetFallback;
             Warn = cloneFrom.Warn;
             DownloadDependencies = cloneFrom.DownloadDependencies.ToList();
-            CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(cloneFrom.CentralPackageVersions, StringComparer.OrdinalIgnoreCase);
+            _centralPackageVersions = cloneFrom._centralPackageVersions;
             FrameworkReferences = new HashSet<FrameworkDependency>(cloneFrom.FrameworkReferences);
             RuntimeIdentifierGraphPath = cloneFrom.RuntimeIdentifierGraphPath;
 
@@ -146,6 +151,17 @@ namespace NuGet.ProjectModel
         public TargetFrameworkInformation Clone()
         {
             return new TargetFrameworkInformation(this);
+        }
+
+        /// <summary>
+        /// Adds to versions defined in the Central package versions management file. 
+        /// </summary>
+        public void AddCentralPackageVersions(IEnumerable<KeyValuePair<string, CentralPackageVersion>> versions)
+        {
+            if (versions != null)
+            {
+                _centralPackageVersions = _centralPackageVersions.AddRange(versions);
+            }
         }
     }
 }

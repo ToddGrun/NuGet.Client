@@ -300,19 +300,17 @@ namespace NuGet.ProjectModel.Test
             {
                 FrameworkName = NuGetFramework.AnyFramework
             };
-            foreach (var entry in left.Split(';'))
-            {
-                leftSide.CentralPackageVersions.Add(entry, new CentralPackageVersion(entry, VersionRange.All));
-            }
+
+            var leftVersions = left.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
+            leftSide.AddCentralPackageVersions(leftVersions);
 
             var rightSide = new TargetFrameworkInformation()
             {
                 FrameworkName = NuGetFramework.AnyFramework
             };
-            foreach (var entry in right.Split(';'))
-            {
-                rightSide.CentralPackageVersions.Add(entry, new CentralPackageVersion(entry, VersionRange.All));
-            }
+
+            var rightVersions = right.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
+            rightSide.AddCentralPackageVersions(rightVersions);
 
             AssertEquality(expected, leftSide, rightSide);
         }
@@ -551,19 +549,17 @@ namespace NuGet.ProjectModel.Test
             {
                 FrameworkName = NuGetFramework.AnyFramework
             };
-            foreach (var entry in left.Split(';'))
-            {
-                leftSide.CentralPackageVersions.Add(entry, new CentralPackageVersion(entry, VersionRange.All));
-            }
+
+            var leftVersions = left.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
+            leftSide.AddCentralPackageVersions(leftVersions);
 
             var rightSide = new TargetFrameworkInformation()
             {
                 FrameworkName = NuGetFramework.AnyFramework
             };
-            foreach (var entry in right.Split(';'))
-            {
-                rightSide.CentralPackageVersions.Add(entry, new CentralPackageVersion(entry, VersionRange.All));
-            }
+
+            var rightVersions = right.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
+            rightSide.AddCentralPackageVersions(rightVersions);
 
             AssertHashCode(expected, leftSide, rightSide);
         }
@@ -579,7 +575,7 @@ namespace NuGet.ProjectModel.Test
             var dependencyFoo = new LibraryDependency(new LibraryRange("foo", VersionRange.All, LibraryDependencyTarget.All),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: true,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -602,10 +598,8 @@ namespace NuGet.ProjectModel.Test
                 FrameworkName = nugetFramework,
             };
 
-            foreach (var cdep in centralVersionDependencies)
-            {
-                tfi.CentralPackageVersions.Add(cdep.Name, cdep);
-            }
+            var versions = centralVersionDependencies.Select(cdep => new KeyValuePair<string, CentralPackageVersion>(cdep.Name, cdep));
+            tfi.AddCentralPackageVersions(versions);
 
             tfi.DownloadDependencies.Add(downloadDependency);
             tfi.FrameworkReferences.Add(frameworkDependency);

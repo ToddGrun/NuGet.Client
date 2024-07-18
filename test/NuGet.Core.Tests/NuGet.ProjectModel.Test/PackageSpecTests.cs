@@ -132,7 +132,7 @@ namespace NuGet.ProjectModel.Test
                 libraryRange: new LibraryRange(Guid.NewGuid().ToString(), LibraryDependencyTarget.Package),
                 includeType: LibraryIncludeFlags.None,
                 suppressParent: LibraryIncludeFlags.ContentFiles,
-                noWarn: new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001, NuGetLogCode.NU1002 },
+                noWarn: [ NuGetLogCode.NU1000, NuGetLogCode.NU1001, NuGetLogCode.NU1002 ],
                 autoReferenced: false,
                 generatePathProperty: false,
                 versionCentrallyManaged: false,
@@ -714,7 +714,7 @@ namespace NuGet.ProjectModel.Test
                 libraryRange: new LibraryRange("Dependency", LibraryDependencyTarget.Package),
                 includeType: LibraryIncludeFlags.None,
                 suppressParent: LibraryIncludeFlags.ContentFiles,
-                noWarn: new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001 },
+                noWarn: [ NuGetLogCode.NU1000, NuGetLogCode.NU1001 ],
                 autoReferenced: false,
                 generatePathProperty: false,
                 versionCentrallyManaged: false,
@@ -733,7 +733,7 @@ namespace NuGet.ProjectModel.Test
             originalTargetFrameworkInformation.FrameworkReferences.Add(new FrameworkDependency("frameworkRef", FrameworkDependencyFlags.All));
             originalTargetFrameworkInformation.FrameworkReferences.Add(new FrameworkDependency("FrameworkReference", FrameworkDependencyFlags.None));
             originalTargetFrameworkInformation.RuntimeIdentifierGraphPath = @"path/to/dotnet/sdk/3.0.100/runtime.json";
-            originalTargetFrameworkInformation.CentralPackageVersions.Add("CVD", new CentralPackageVersion("CVD", VersionRange.Parse("1.0.0")));
+            originalTargetFrameworkInformation.AddCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("CVD", new CentralPackageVersion("CVD", VersionRange.Parse("1.0.0")))]);
             return originalTargetFrameworkInformation;
         }
 

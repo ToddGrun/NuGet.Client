@@ -227,7 +227,7 @@ namespace NuGet.Tests.Apex
                     LibraryRange = new LibraryRange(e.Attribute(XName.Get("Include")).Value, VersionRange.Parse(e.Attribute(XName.Get("Version")).Value), LibraryDependencyTarget.Package),
                     IncludeType = LibraryIncludeFlags.All,
                     SuppressParent = LibraryIncludeFlags.None,
-                    NoWarn = new List<NuGetLogCode>(),
+                    NoWarn = [],
                     AutoReferenced = false,
                     GeneratePathProperty = false
                 })

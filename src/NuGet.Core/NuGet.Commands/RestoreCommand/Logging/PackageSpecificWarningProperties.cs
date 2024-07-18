@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -110,9 +111,9 @@ namespace NuGet.Commands
         /// <param name="codes">IEnumerable of NuGetLogCode for which no warning should be thrown.</param>
         /// <param name="libraryId">Library for which no warning should be thrown.</param>
         /// <param name="framework">Target graph for which no warning should be thrown.</param>
-        public void AddRangeOfCodes(IEnumerable<NuGetLogCode> codes, string libraryId, NuGetFramework framework)
+        public void AddRangeOfCodes(ImmutableArray<NuGetLogCode> codes, string libraryId, NuGetFramework framework)
         {
-            foreach (var code in codes.NoAllocEnumerate())
+            foreach (var code in codes)
             {
                 Add(code, libraryId, framework);
             }

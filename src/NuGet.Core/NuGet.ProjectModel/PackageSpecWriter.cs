@@ -509,7 +509,7 @@ namespace NuGet.ProjectModel
 
                     SetValueIfTrue(writer, "autoReferenced", dependency.AutoReferenced);
 
-                    if (dependency.NoWarn.Count > 0)
+                    if (dependency.NoWarn.Length > 0)
                     {
                         SetArrayValue(writer, "noWarn", dependency
                             .NoWarn
@@ -615,7 +615,7 @@ namespace NuGet.ProjectModel
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
                     SetValueIfNotNull(writer, "targetAlias", framework.TargetAlias);
                     SetDependencies(writer, framework.Dependencies);
-                    SetCentralDependencies(writer, framework.CentralPackageVersions.Values, hashing);
+                    SetCentralDependencies(writer, framework.CentralPackageVersions.Count, framework.CentralPackageVersions.Values, hashing);
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfNotNull(writer, "secondaryFramework",
@@ -663,9 +663,9 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void SetCentralDependencies(IObjectWriter writer, ICollection<CentralPackageVersion> centralPackageVersions, bool hashing)
+        private static void SetCentralDependencies(IObjectWriter writer, int count, IEnumerable<CentralPackageVersion> centralPackageVersions, bool hashing)
         {
-            if (!(centralPackageVersions.Count > 0))
+            if (count <= 0)
             {
                 return;
             }

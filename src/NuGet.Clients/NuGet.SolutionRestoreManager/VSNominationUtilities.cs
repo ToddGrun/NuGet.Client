@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -130,7 +131,7 @@ namespace NuGet.SolutionRestoreManager
 
             if (cpvmEnabled && targetFrameworkInfo.Items.TryGetValue("PackageVersion", out var centralPackageVersions))
             {
-                tfi.CentralPackageVersions.AddRange(
+                tfi.AddCentralPackageVersions(
                     centralPackageVersions
                        .Select(ToCentralPackageVersion)
                        .Distinct(CentralPackageVersionNameComparer.Default)
@@ -491,7 +492,7 @@ namespace NuGet.SolutionRestoreManager
             string? noWarnString = GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn);
             IList<NuGetLogCode> noWarn = noWarnString is not null ? MSBuildStringUtility.GetNuGetLogCodes(noWarnString) : Array.Empty<NuGetLogCode>();
 
-            var dependency = new LibraryDependency(noWarn)
+            var dependency = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(
                     name: item.Name,
@@ -502,7 +503,8 @@ namespace NuGet.SolutionRestoreManager
                 AutoReferenced = GetPropertyBoolOrFalse(item, "IsImplicitlyDefined"),
                 GeneratePathProperty = GetPropertyBoolOrFalse(item, "GeneratePathProperty"),
                 Aliases = GetPropertyValueOrNull(item, "Aliases"),
-                VersionOverride = versionOverrideRange
+                VersionOverride = versionOverrideRange,
+                NoWarn = noWarn.ToImmutableArray()
             };
 
             MSBuildRestoreUtility.ApplyIncludeFlags(

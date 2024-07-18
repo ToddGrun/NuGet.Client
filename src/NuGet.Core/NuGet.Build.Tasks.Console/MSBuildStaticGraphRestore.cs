@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -304,7 +305,7 @@ namespace NuGet.Build.Tasks.Console
 
                 IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn"));
 
-                libraryDependencies.Add(new LibraryDependency(noWarn)
+                libraryDependencies.Add(new LibraryDependency()
                 {
                     AutoReferenced = packageReferenceItem.IsPropertyTrue("IsImplicitlyDefined"),
                     GeneratePathProperty = packageReferenceItem.IsPropertyTrue("GeneratePathProperty"),
@@ -316,6 +317,7 @@ namespace NuGet.Build.Tasks.Console
                         LibraryDependencyTarget.Package),
                     SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
                     VersionOverride = string.IsNullOrWhiteSpace(versionOverride) ? null : VersionRange.Parse(versionOverride),
+                    NoWarn = noWarn.ToImmutableArray(),
                 });
             }
 
@@ -657,7 +659,7 @@ namespace NuGet.Build.Tasks.Console
 
                 if (isCpvmEnabled)
                 {
-                    targetFrameworkInformation.CentralPackageVersions.AddRange(GetCentralPackageVersions(msBuildProjectInstance));
+                    targetFrameworkInformation.AddCentralPackageVersions(GetCentralPackageVersions(msBuildProjectInstance));
                     LibraryDependency.ApplyCentralVersionInformation(targetFrameworkInformation.Dependencies, targetFrameworkInformation.CentralPackageVersions);
                 }
 

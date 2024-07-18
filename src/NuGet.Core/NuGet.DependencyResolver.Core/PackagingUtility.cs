@@ -33,7 +33,7 @@ namespace NuGet.DependencyResolver
 
             // Create the library
             // Nuspec references cannot contain suppress parent flags
-            var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+            var libraryDependency = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange
                 {

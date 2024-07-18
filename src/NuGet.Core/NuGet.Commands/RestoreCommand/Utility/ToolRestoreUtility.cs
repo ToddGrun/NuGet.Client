@@ -39,7 +39,7 @@ namespace NuGet.Commands
                         FrameworkName = framework,
                         Dependencies = new List<LibraryDependency>
                         {
-                            new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                            new LibraryDependency()
                             {
                                 LibraryRange = new LibraryRange(id, versionRange, LibraryDependencyTarget.Package)
                             }

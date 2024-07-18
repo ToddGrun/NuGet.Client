@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -276,11 +278,11 @@ namespace NuGet.ProjectModel
         }
 
         [Obsolete]
-        private static void ReadCentralPackageVersions(
+        private static Dictionary<string, CentralPackageVersion> ReadCentralPackageVersions(
             JsonTextReader jsonReader,
-            IDictionary<string, CentralPackageVersion> centralPackageVersions,
             string filePath)
         {
+            Dictionary<string, CentralPackageVersion> versions = null;
             jsonReader.ReadObject(propertyName =>
             {
                 int line = jsonReader.LineNumber;
@@ -306,8 +308,11 @@ namespace NuGet.ProjectModel
                         filePath);
                 }
 
-                centralPackageVersions[propertyName] = new CentralPackageVersion(propertyName, VersionRange.Parse(version));
+                versions ??= new Dictionary<string, CentralPackageVersion>();
+                versions[propertyName] = new CentralPackageVersion(propertyName, VersionRange.Parse(version));
             });
+
+            return versions;
         }
 
         [Obsolete]
@@ -376,7 +381,7 @@ namespace NuGet.ProjectModel
                     var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
-                    IList<NuGetLogCode> noWarn = Array.Empty<NuGetLogCode>();
+                    ImmutableArray<NuGetLogCode> noWarn = [];
 
                     // This method handles both the dependencies and framework assembly sections.
                     // Framework references should be limited to references.
@@ -510,7 +515,7 @@ namespace NuGet.ProjectModel
 
                     // the dependency flags are: Include flags - Exclude flags
                     var includeFlags = dependencyIncludeFlagsValue & ~dependencyExcludeFlagsValue;
-                    var libraryDependency = new LibraryDependency(noWarn)
+                    var libraryDependency = new LibraryDependency()
                     {
                         LibraryRange = new LibraryRange()
                         {
@@ -527,7 +532,8 @@ namespace NuGet.ProjectModel
                         // The ReferenceType is not persisted to the assets file
                         // Default to LibraryDependencyReferenceType.Direct on Read
                         ReferenceType = LibraryDependencyReferenceType.Direct,
-                        VersionOverride = versionOverride
+                        VersionOverride = versionOverride,
+                        NoWarn = noWarn
                     };
 
                     results.Add(libraryDependency);
@@ -638,7 +644,7 @@ namespace NuGet.ProjectModel
 
                     // the dependency flags are: Include flags - Exclude flags
                     var includeFlags = dependencyIncludeFlagsValue & ~dependencyExcludeFlagsValue;
-                    var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                    var libraryDependency = new LibraryDependency()
                     {
                         LibraryRange = new LibraryRange()
                         {
@@ -1325,9 +1331,10 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static IList<NuGetLogCode> ReadNuGetLogCodesList(JsonTextReader jsonReader)
+        private static ImmutableArray<NuGetLogCode> ReadNuGetLogCodesList(JsonTextReader jsonReader)
         {
-            IList<NuGetLogCode> items = null;
+            NuGetLogCode[] items = null;
+            int index = 0;
 
             if (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonToken.StartArray)
             {
@@ -1335,14 +1342,34 @@ namespace NuGet.ProjectModel
                 {
                     if (jsonReader.TokenType == JsonToken.String && Enum.TryParse((string)jsonReader.Value, out NuGetLogCode code))
                     {
-                        items = items ?? new List<NuGetLogCode>();
+                        if (items == null)
+                        {
+                            items = ArrayPool<NuGetLogCode>.Shared.Rent(16);
+                        }
+                        else if (items.Length == index)
+                        {
+                            var oldItems = items;
 
-                        items.Add(code);
+                            items = ArrayPool<NuGetLogCode>.Shared.Rent(items.Length * 2);
+                            oldItems.CopyTo(items, 0);
+
+                            ArrayPool<NuGetLogCode>.Shared.Return(oldItems);
+                        }
+
+                        items[index++] = code;
                     }
                 }
             }
 
-            return items ?? Array.Empty<NuGetLogCode>();
+            if (items == null)
+            {
+                return [];
+            }
+
+            var retVal = items.AsSpan(0, index).ToImmutableArray();
+            ArrayPool<NuGetLogCode>.Shared.Return(items);
+
+            return retVal;
         }
 
         [Obsolete]
@@ -1801,10 +1828,11 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "centralPackageVersions":
-                        ReadCentralPackageVersions(
+                        var versions = ReadCentralPackageVersions(
                             jsonReader,
-                            targetFrameworkInformation.CentralPackageVersions,
                             packageSpec.FilePath);
+
+                        targetFrameworkInformation.AddCentralPackageVersions(versions);
                         break;
 
                     case "dependencies":

@@ -427,7 +427,7 @@ namespace NuGet.ProjectModel.Test
                 Dependencies = new List<LibraryDependency>() { ld },
             };
 
-            frameworkB.CentralPackageVersions[ld.Name] = new CentralPackageVersion(ld.Name, ld.LibraryRange.VersionRange);
+            frameworkB.AddCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>(ld.Name, new CentralPackageVersion(ld.Name, ld.LibraryRange.VersionRange))]);
 
             var spec = new PackageSpec(new[] { frameworkA, frameworkB })
             {

@@ -1477,7 +1477,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                         LibraryIncludeFlags.All,
                         LibraryIncludeFlags.All,
-                        new List<NuGetLogCode>(),
+                        noWarn: [],
                         autoReferenced: false,
                         generatePathProperty: true,
                         versionCentrallyManaged: false,
@@ -1541,7 +1541,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                         LibraryDependencyTarget.All),
                     LibraryIncludeFlags.All,
                     LibraryIncludeFlags.All,
-                    new List<NuGetLogCode>(),
+                    noWarn: [],
                     autoReferenced: true,
                     generatePathProperty: true,
                     versionCentrallyManaged: false,
@@ -1616,7 +1616,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                         LibraryDependencyTarget.All),
                     LibraryIncludeFlags.All,
                     LibraryIncludeFlags.All,
-                    new List<NuGetLogCode>(),
+                    noWarn: [],
                     autoReferenced: false,
                     generatePathProperty: false,
                     versionCentrallyManaged: false,
@@ -1698,7 +1698,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                         LibraryDependencyTarget.All),
                     LibraryIncludeFlags.All,
                     LibraryIncludeFlags.All,
-                    new List<NuGetLogCode>(),
+                    noWarn: [],
                     autoReferenced: false,
                     generatePathProperty: false,
                     versionCentrallyManaged: false,
@@ -2521,37 +2521,41 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var packageA = new SimpleTestPackageContext { Id = "PackageA", Version = "1.0.0", };
                 await SimpleTestPackageUtility.CreateFullPackageAsync(testPathContext.PackageSource, packageA);
 
-                var project2Spec = PackageReferenceSpecBuilder.Create("Project2", project2Directory.FullName)
-                    .WithTargetFrameworks(new[]
-                    {
-                        new TargetFrameworkInformation
-                        {
-                            FrameworkName = NuGetFramework.Parse("net46"),
-                            Dependencies = new List<LibraryDependency>(new[]
-                            {
+                var project2TargetFrameworkInformation = new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net46"),
+                    Dependencies = new List<LibraryDependency>(new[]
+    {
                                 new LibraryDependency
                                 {
                                     LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.All),
                                     VersionCentrallyManaged = true,
                                 },
                             }),
-                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
-                        }
+                };
+                project2TargetFrameworkInformation.AddCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]);
+
+                var project2Spec = PackageReferenceSpecBuilder.Create("Project2", project2Directory.FullName)
+                    .WithTargetFrameworks(new[]
+                    {
+                        project2TargetFrameworkInformation
                     })
                     .WithCentralPackageVersionsEnabled()
                     .WithCentralPackageTransitivePinningEnabled()
                     .Build()
                     .WithTestRestoreMetadata();
 
+                var project1TargetFrameworkInformation = new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net46"),
+                    Dependencies = new List<LibraryDependency>(),
+                };
+                project1TargetFrameworkInformation.AddCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]);
+
                 var project1Spec = PackageReferenceSpecBuilder.Create("Project1", project1Directory.FullName)
                     .WithTargetFrameworks(new[]
                     {
-                        new TargetFrameworkInformation
-                        {
-                            FrameworkName = NuGetFramework.Parse("net46"),
-                            Dependencies = new List<LibraryDependency>(),
-                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
-                        }
+                        project1TargetFrameworkInformation
                     })
                     .WithCentralPackageVersionsEnabled()
                     .WithCentralPackageTransitivePinningEnabled()
@@ -3323,10 +3327,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 Dependencies = dependencies,
             };
 
-            foreach (var cvd in centralVersionsDependencies)
-            {
-                tfi.CentralPackageVersions.Add(cvd.Name, cvd);
-            }
+            tfi.AddCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd)));
             LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
 
             return tfi;

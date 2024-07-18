@@ -249,7 +249,7 @@ namespace NuGet.ProjectModel
                         }
                     }
 
-                    var dependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                    var dependency = new LibraryDependency()
                     {
                         IncludeType = (reference.IncludeAssets & ~reference.ExcludeAssets),
                         SuppressParent = reference.PrivateAssets,
@@ -306,7 +306,7 @@ namespace NuGet.ProjectModel
                 // Note: Only add in dependencies that are in the filtered list to avoid getting the wrong TxM
                 dependencies.AddRange(childReferences
                     .Where(reference => filteredExternalDependencies.Contains(reference.ProjectName))
-                    .Select(reference => new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                    .Select(reference => new LibraryDependency()
                     {
                         LibraryRange = new LibraryRange
                         {
@@ -350,7 +350,7 @@ namespace NuGet.ProjectModel
                     var dependencyNamesSet = new HashSet<string>(targetFrameworkInfo.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
                     dependencies.AddRange(targetFrameworkInfo.CentralPackageVersions
                         .Where(item => !dependencyNamesSet.Contains(item.Key))
-                        .Select(item => new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                        .Select(item => new LibraryDependency()
                         {
                             LibraryRange = new LibraryRange(item.Value.Name, item.Value.VersionRange, LibraryDependencyTarget.Package),
                             VersionCentrallyManaged = true,

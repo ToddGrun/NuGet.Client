@@ -413,7 +413,6 @@ NuGet.Commands.PackCommandRunner.RunPackageBuild() -> bool
 NuGet.Commands.PackageSourceProviderExtensions
 NuGet.Commands.PackageSpecificWarningProperties
 ~NuGet.Commands.PackageSpecificWarningProperties.Add(NuGet.Common.NuGetLogCode code, string libraryId, NuGet.Frameworks.NuGetFramework framework) -> void
-~NuGet.Commands.PackageSpecificWarningProperties.AddRangeOfCodes(System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> codes, string libraryId, NuGet.Frameworks.NuGetFramework framework) -> void
 ~NuGet.Commands.PackageSpecificWarningProperties.AddRangeOfFrameworks(NuGet.Common.NuGetLogCode code, string libraryId, System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworks) -> void
 ~NuGet.Commands.PackageSpecificWarningProperties.Contains(NuGet.Common.NuGetLogCode code, string libraryId, NuGet.Frameworks.NuGetFramework framework) -> bool
 ~NuGet.Commands.PackageSpecificWarningProperties.Equals(NuGet.Commands.PackageSpecificWarningProperties other) -> bool

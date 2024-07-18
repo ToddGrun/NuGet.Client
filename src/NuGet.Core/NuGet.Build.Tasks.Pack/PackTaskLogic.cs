@@ -889,7 +889,7 @@ namespace NuGet.Build.Tasks.Pack
                     //   https://github.com/NuGet/Home/issues/3891
                     //
                     // For now, assume the project reference is a package dependency.
-                    var projectDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                    var projectDependency = new LibraryDependency()
                     {
                         LibraryRange = new LibraryRange(
                             targetLibrary.Name,
@@ -968,7 +968,7 @@ namespace NuGet.Build.Tasks.Pack
                         }
                     }
 
-                    if (packageDependency.NoWarn.Count > 0)
+                    if (packageDependency.NoWarn.Length > 0)
                     {
                         HashSet<(NuGetLogCode, NuGetFramework)> nowarnProperties = null;
 

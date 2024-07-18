@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -653,7 +654,7 @@ namespace NuGet.Commands
                 // Get warning suppressions
                 IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(item.GetProperty("NoWarn"));
 
-                var dependency = new LibraryDependency(noWarn)
+                var dependency = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange(
                         name: item.GetProperty("Id"),
@@ -663,7 +664,8 @@ namespace NuGet.Commands
                     AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined"),
                     GeneratePathProperty = IsPropertyTrue(item, "GeneratePathProperty"),
                     Aliases = item.GetProperty("Aliases"),
-                    VersionOverride = GetVersionRange(item, defaultValue: null, "VersionOverride")
+                    VersionOverride = GetVersionRange(item, defaultValue: null, "VersionOverride"),
+                    NoWarn = noWarn.ToImmutableArray()
                 };
 
                 ApplyIncludeFlags(dependency, item);
@@ -1144,7 +1146,7 @@ namespace NuGet.Commands
             foreach ((var targetAlias, var versions) in centralVersionsDependencies)
             {
                 var frameworkInfo = spec.TargetFrameworks.FirstOrDefault(f => targetAlias.Equals(f.TargetAlias, StringComparison.OrdinalIgnoreCase));
-                frameworkInfo.CentralPackageVersions.AddRange(versions);
+                frameworkInfo.AddCentralPackageVersions(versions);
                 LibraryDependency.ApplyCentralVersionInformation(frameworkInfo.Dependencies, frameworkInfo.CentralPackageVersions);
             }
         }

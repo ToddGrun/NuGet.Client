@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel.Test
                 libraryRange: new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
                 includeType: LibraryIncludeFlags.All,
                 suppressParent: LibraryIncludeFlags.None,
-                noWarn: new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -114,10 +114,7 @@ namespace NuGet.ProjectModel.Test
                 Dependencies = dependencies,
             };
 
-            foreach (var cvd in centralVersionsDependencies)
-            {
-                tfi.CentralPackageVersions.Add(cvd.Name, cvd);
-            }
+            tfi.AddCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd)));
 
             if (cpvmEnabled)
             {

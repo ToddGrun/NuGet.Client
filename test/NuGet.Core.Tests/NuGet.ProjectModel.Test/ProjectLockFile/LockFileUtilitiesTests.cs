@@ -166,7 +166,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("library1", versionRange: VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -224,7 +224,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("library1", versionRange: VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -277,7 +277,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("cpvm1", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -287,8 +287,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
-            tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
-            tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            tfm.AddCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1), new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)]);
             tfm.Dependencies.Add(dependency1);
             LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
@@ -335,7 +334,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("cpvm1", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -345,8 +344,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
-            tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
-            tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            tfm.AddCentralPackageVersions([
+                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
+                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
+            ]);
             tfm.Dependencies.Add(dependency1);
             LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
@@ -389,7 +390,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("cpvm1", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -399,8 +400,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
-            tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
-            tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            tfm.AddCentralPackageVersions([
+                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
+                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
+            ]);
             tfm.Dependencies.Add(dependency1);
             LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
@@ -442,7 +445,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("cpvm1", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -452,8 +455,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
-            tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
-            tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            tfm.AddCentralPackageVersions([
+                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
+                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
+            ]);
             tfm.Dependencies.Add(dependency1);
             LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
@@ -495,7 +500,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("cpvm1", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -505,8 +510,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
-            tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
-            tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            tfm.AddCentralPackageVersions([
+                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
+                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
+            ]);
             tfm.Dependencies.Add(dependency1);
             LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
@@ -552,7 +559,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("cpvm1", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -562,8 +569,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
-            tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
-            tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            tfm.AddCentralPackageVersions([
+                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
+                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
+            ]);
             tfm.Dependencies.Add(dependency1);
             LibraryDependency.ApplyCentralVersionInformation(tfm.Dependencies, tfm.CentralPackageVersions);
 
@@ -624,7 +633,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("cpvm1", versionRange: VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -674,7 +683,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("cpvm1", versionRange: VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -834,7 +843,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("packageC", versionRange: VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
                 includeType: LibraryIncludeFlags.All,
                 suppressParent: LibraryIncludeFlagUtils.DefaultSuppressParent,
-                noWarn: new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -922,7 +931,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("packageC", versionRange: VersionRange.Parse("2.0.0"), LibraryDependencyTarget.Package),
                 includeType: LibraryIncludeFlags.All,
                 suppressParent: LibraryIncludeFlagUtils.DefaultSuppressParent,
-                noWarn: new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -995,7 +1004,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 new LibraryRange("packageC", versionRange: VersionRange.Parse("2.0.0"), LibraryDependencyTarget.Package),
                 includeType: LibraryIncludeFlags.All,
                 suppressParent: LibraryIncludeFlagUtils.DefaultSuppressParent,
-                noWarn: new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,

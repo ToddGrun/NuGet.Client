@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -14,20 +15,20 @@ namespace NuGet.LibraryModel
 {
     public class LibraryDependency : IEquatable<LibraryDependency>
     {
-        public required LibraryRange LibraryRange { get; set; }
+        public required LibraryRange LibraryRange { get; init; }
 
         public LibraryIncludeFlags IncludeType { get; set; } = LibraryIncludeFlags.All;
 
         public LibraryIncludeFlags SuppressParent { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
 
-        public IList<NuGetLogCode> NoWarn { get; set; }
+        public ImmutableArray<NuGetLogCode> NoWarn { get; init; } = [];
 
         public string Name => LibraryRange.Name;
 
         /// <summary>
         /// True if the PackageReference is added by the SDK and not the user.
         /// </summary>
-        public bool AutoReferenced { get; set; }
+        public bool AutoReferenced { get; init; }
 
         /// <summary>
         /// True if the dependency has the version set through CentralPackageVersionManagement file.
@@ -39,9 +40,9 @@ namespace NuGet.LibraryModel
         /// </summary>
         public LibraryDependencyReferenceType ReferenceType { get; set; } = LibraryDependencyReferenceType.Direct;
 
-        public bool GeneratePathProperty { get; set; }
+        public bool GeneratePathProperty { get; init; }
 
-        public string? Aliases { get; set; }
+        public string? Aliases { get; init; }
 
         /// <summary>
         /// Gets or sets a value indicating a version override for any centrally defined version.
@@ -51,16 +52,7 @@ namespace NuGet.LibraryModel
         /// <summary>Initializes a new instance of the LibraryDependency class.</summary>
         /// <remarks>Required properties must be set when using this constructor.</remarks>
         public LibraryDependency()
-            : this(new List<NuGetLogCode>())
         {
-        }
-
-        /// <summary>Initializes a new instance of the LibraryDependency class with the specified NoWarn codes.</summary>
-        /// <param name="noWarn">Specifies a <see cref="List{T}" /> containing <see cref="NuGetLogCode" /> values.</param>
-        /// <remarks>Required properties must be set when using this constructor.</remarks>
-        public LibraryDependency(IList<NuGetLogCode> noWarn)
-        {
-            NoWarn = noWarn;
         }
 
         /// <summary>Initializes a new instance of the LibraryDependency class.</summary>
@@ -77,7 +69,7 @@ namespace NuGet.LibraryModel
             LibraryRange libraryRange,
             LibraryIncludeFlags includeType,
             LibraryIncludeFlags suppressParent,
-            IList<NuGetLogCode> noWarn,
+            ImmutableArray<NuGetLogCode> noWarn,
             bool autoReferenced,
             bool generatePathProperty,
             bool versionCentrallyManaged,
@@ -111,7 +103,12 @@ namespace NuGet.LibraryModel
             hashCode.AddStruct(IncludeType);
             hashCode.AddStruct(SuppressParent);
             hashCode.AddObject(AutoReferenced);
-            hashCode.AddSequence(NoWarn);
+
+            foreach (var item in NoWarn)
+            {
+                hashCode.AddStruct(item);
+            }
+
             hashCode.AddObject(GeneratePathProperty);
             hashCode.AddObject(VersionCentrallyManaged);
             hashCode.AddObject(Aliases);
@@ -152,15 +149,14 @@ namespace NuGet.LibraryModel
         public LibraryDependency Clone()
         {
             var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
-            var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
 
-            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases, VersionOverride);
+            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, NoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases, VersionOverride);
         }
 
         /// <summary>
         /// Merge the CentralVersion information to the package reference information.
         /// </summary>
-        public static void ApplyCentralVersionInformation(IList<LibraryDependency> packageReferences, IDictionary<string, CentralPackageVersion> centralPackageVersions)
+        public static void ApplyCentralVersionInformation(IList<LibraryDependency> packageReferences, IReadOnlyDictionary<string, CentralPackageVersion> centralPackageVersions)
         {
             if (packageReferences == null)
             {

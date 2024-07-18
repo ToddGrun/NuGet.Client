@@ -220,7 +220,7 @@ namespace NuGet.PackageManagement.VisualStudio
             BuildIntegratedInstallationContext __,
             CancellationToken token)
         {
-            var dependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+            var dependency = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(
                     name: packageId,
@@ -449,7 +449,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (isCpvmEnabled)
             {
                 // Add the central version information and merge the information to the package reference dependencies
-                projectTfi.CentralPackageVersions.AddRange(GetCentralPackageVersions());
+                projectTfi.AddCentralPackageVersions(GetCentralPackageVersions());
                 LibraryDependency.ApplyCentralVersionInformation(projectTfi.Dependencies, projectTfi.CentralPackageVersions);
             }
 

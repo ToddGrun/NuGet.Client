@@ -182,7 +182,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static IEnumerable<IDictionary<string, CentralPackageVersion>> GetCentralPackageVersionLists(
+        private static IEnumerable<IReadOnlyDictionary<string, CentralPackageVersion>> GetCentralPackageVersionLists(
             PackageSpec spec,
             IEnumerable<NuGetFramework> frameworksToConsider)
         {
@@ -235,7 +235,7 @@ namespace NuGet.ProjectModel
             VersionRange range,
             bool centralPackageVersionsEnabled)
         {
-            var dependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+            var dependency = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(packageId, range, LibraryDependencyTarget.Package),
                 VersionCentrallyManaged = centralPackageVersionsEnabled
