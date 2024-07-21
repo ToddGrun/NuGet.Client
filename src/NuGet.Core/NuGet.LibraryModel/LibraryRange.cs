@@ -33,12 +33,20 @@ namespace NuGet.LibraryModel
             TypeConstraint = typeConstraint;
         }
 
-        public required string Name { get; set; }
+        [SetsRequiredMembers]
+        internal LibraryRange(LibraryRange other)
+        {
+            Name = other.Name;
+            VersionRange = other.VersionRange;
+            TypeConstraint = other.TypeConstraint;
+        }
+
+        public required string Name { get; init; }
 
         // Null is used for all, CLI still has code expecting this
-        public VersionRange? VersionRange { get; set; }
+        public VersionRange? VersionRange { get; init; }
 
-        public LibraryDependencyTarget TypeConstraint { get; set; } = LibraryDependencyTarget.All;
+        public LibraryDependencyTarget TypeConstraint { get; init; } = LibraryDependencyTarget.All;
 
         public override string ToString()
         {
@@ -169,6 +177,45 @@ namespace NuGet.LibraryModel
         public static bool operator !=(LibraryRange? left, LibraryRange? right)
         {
             return !Equals(left, right);
+        }
+
+        public LibraryRange WithTypeConstraint(LibraryDependencyTarget typeConstraint)
+        {
+            if (TypeConstraint == typeConstraint)
+            {
+                return this;
+            }
+
+            return new LibraryRange(this)
+            {
+                TypeConstraint = typeConstraint
+            };
+        }
+
+        public LibraryRange WithName(string name)
+        {
+            if (Name == name)
+            {
+                return this;
+            }
+
+            return new LibraryRange(this)
+            {
+                Name = name
+            };
+        }
+
+        public LibraryRange WithVersionRange(VersionRange versionRange)
+        {
+            if (VersionRange == versionRange)
+            {
+                return this;
+            }
+
+            return new LibraryRange(this)
+            {
+                VersionRange = versionRange
+            };
         }
     }
 }

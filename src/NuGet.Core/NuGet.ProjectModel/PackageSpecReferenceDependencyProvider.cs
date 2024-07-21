@@ -207,6 +207,7 @@ namespace NuGet.ProjectModel
                 library[KnownLibraryProperties.FrameworkAssemblies] = frameworkAssemblies;
 
                 // Add framework references
+                // REVIEW: This is a snapshot of the framework references now, is that ok?
                 library[KnownLibraryProperties.FrameworkReferences] = targetFrameworkInfo.FrameworkReferences;
             }
         }
@@ -249,7 +250,7 @@ namespace NuGet.ProjectModel
                         }
                     }
 
-                    var dependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                    var dependency = new LibraryDependency()
                     {
                         IncludeType = (reference.IncludeAssets & ~reference.ExcludeAssets),
                         SuppressParent = reference.PrivateAssets,
@@ -294,10 +295,17 @@ namespace NuGet.ProjectModel
                 // Set all dependencies from project.json to external if an external match was passed in
                 // This is viral and keeps p2ps from looking into directories when we are going down
                 // a path already resolved by msbuild.
-                foreach (var dependency in dependencies.Where(d => IsProject(d)
-                    && filteredExternalDependencies.Contains(d.Name)))
+                for (int i = 0; i < dependencies.Count; i++)
                 {
-                    dependency.LibraryRange.TypeConstraint = LibraryDependencyTarget.ExternalProject;
+                    var d = dependencies[i];
+                    if (IsProject(d) && filteredExternalDependencies.Contains(d.Name))
+                    {
+                        var libraryRange = d.LibraryRange.WithTypeConstraint(LibraryDependencyTarget.ExternalProject);
+
+                        // Do not push the dependency changes here upwards, as the original package
+                        // spec should not be modified.
+                        dependencies[i] = d.WithLibraryRange(libraryRange);
+                    }
                 }
 
                 // Add dependencies passed in externally
@@ -306,7 +314,7 @@ namespace NuGet.ProjectModel
                 // Note: Only add in dependencies that are in the filtered list to avoid getting the wrong TxM
                 dependencies.AddRange(childReferences
                     .Where(reference => filteredExternalDependencies.Contains(reference.ProjectName))
-                    .Select(reference => new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                    .Select(reference => new LibraryDependency()
                     {
                         LibraryRange = new LibraryRange
                         {
@@ -350,7 +358,7 @@ namespace NuGet.ProjectModel
                     var dependencyNamesSet = new HashSet<string>(targetFrameworkInfo.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
                     dependencies.AddRange(targetFrameworkInfo.CentralPackageVersions
                         .Where(item => !dependencyNamesSet.Contains(item.Key))
-                        .Select(item => new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                        .Select(item => new LibraryDependency()
                         {
                             LibraryRange = new LibraryRange(item.Value.Name, item.Value.VersionRange, LibraryDependencyTarget.Package),
                             VersionCentrallyManaged = true,
@@ -363,13 +371,15 @@ namespace NuGet.ProjectModel
 
                 for (var i = 0; i < dependencies.Count; i++)
                 {
-                    // Clone the library dependency so we can safely modify it. The instance cloned here is from the
-                    // original package spec, which should not be modified.
-                    dependencies[i] = dependencies[i].Clone();
+                    // Do not push the dependency changes here upwards, as the original package
+                    // spec should not be modified.
+
                     // Remove "project" from the allowed types for this dependency
                     // This will require that projects referenced by an msbuild project
                     // must be external projects.
-                    dependencies[i].LibraryRange.TypeConstraint &= ~LibraryDependencyTarget.Project;
+                    var dependency = dependencies[i];
+                    var libraryRange = dependency.LibraryRange.WithTypeConstraint(dependency.LibraryRange.TypeConstraint & ~LibraryDependencyTarget.Project);
+                    dependencies[i] = dependency.WithLibraryRange(libraryRange);
                 }
             }
 

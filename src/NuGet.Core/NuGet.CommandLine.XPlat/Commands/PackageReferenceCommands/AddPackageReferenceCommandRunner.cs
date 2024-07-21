@@ -19,6 +19,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
@@ -49,7 +50,7 @@ namespace NuGet.CommandLine.XPlat
                     versionRange = VersionRange.Parse(packageReferenceArgs.PackageVersion);
                 }
 
-                var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                var libraryDependency = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange(
                         name: packageReferenceArgs.PackageId,
@@ -305,31 +306,37 @@ namespace NuGet.CommandLine.XPlat
 
             if (developmentDependency)
             {
-                foreach (var frameworkInfo in project.TargetFrameworks
-                    .OrderBy(framework => framework.FrameworkName.ToString(),
-                        StringComparer.Ordinal))
+                var orderedFrameworksWithOriginalIndex = project.TargetFrameworks
+                    .Select((frameworkInfo, originalIndex) => (frameworkInfo, originalIndex))
+                    .OrderBy(tuple => tuple.frameworkInfo.FrameworkName.ToString(), StringComparer.Ordinal);
+
+                foreach (var (frameworkInfo, originalIndex) in orderedFrameworksWithOriginalIndex)
                 {
-                    var dependency = frameworkInfo.Dependencies.First(
-                        dep => dep.Name.Equals(packageReferenceArgs.PackageId, StringComparison.OrdinalIgnoreCase));
+                    var index = frameworkInfo.Dependencies.FirstIndex(dep => dep.Name.Equals(packageReferenceArgs.PackageId, StringComparison.OrdinalIgnoreCase));
+                    var dependency = frameworkInfo.Dependencies[index];
 
                     // if suppressParent and IncludeType aren't set by user, then only update those as per dev dependency
-                    if (dependency?.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
-                        dependency?.IncludeType == LibraryIncludeFlags.All)
+                    if (dependency.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
+                        dependency.IncludeType == LibraryIncludeFlags.All)
                     {
-                        dependency.SuppressParent = LibraryIncludeFlags.All;
-                        dependency.IncludeType = LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile;
+                        dependency = dependency
+                            .WithSuppressParent(LibraryIncludeFlags.All)
+                            .WithIncludeType(LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile);
                     }
 
-                    if (dependency != null)
-                    {
-                        dependency.LibraryRange.VersionRange = version;
-                        dependency.VersionCentrallyManaged = isCentralPackageManagementEnabled;
-                        return dependency;
-                    }
+                    var libraryRange = dependency.LibraryRange.WithVersionRange(version);
+                    dependency = dependency
+                        .WithLibraryRange(libraryRange)
+                        .WithVersionCentrallyManaged(isCentralPackageManagementEnabled);
+
+                    var newDependencies = frameworkInfo.Dependencies.SetItem(index, dependency);
+                    project.TargetFrameworks[originalIndex] = frameworkInfo.WithDependencies(newDependencies);
+
+                    return dependency;
                 }
             }
 
-            return new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+            return new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(
                     name: packageReferenceArgs.PackageId,

@@ -661,7 +661,8 @@ namespace NuGet.Commands.FuncTest
                     LibraryRange = new LibraryRange(packageA.Id, VersionRange.Parse("1.0.*"), LibraryDependencyTarget.Package)
                 };
 
-                childProject.TargetFrameworks.FirstOrDefault().Dependencies.Add(dependency);
+                var newDependencies = childProject.TargetFrameworks.FirstOrDefault().Dependencies.Add(dependency);
+                childProject.TargetFrameworks[0] = childProject.TargetFrameworks[0].WithDependencies(newDependencies);
 
                 // Enable lock file
                 childProject.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(

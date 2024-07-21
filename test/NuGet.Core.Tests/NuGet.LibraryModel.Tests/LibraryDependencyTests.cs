@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using NuGet.Versioning;
 using Xunit;
 
@@ -17,10 +18,10 @@ namespace NuGet.LibraryModel.Tests
             var target = GetTarget();
 
             // Act
-            var clone = target.Clone();
+            var clone = target.WithReferenceType(target.ReferenceType);
 
             // Assert
-            Assert.NotSame(target, clone);
+            Assert.Same(target, clone);
             Assert.Equal(target, clone);
         }
 
@@ -31,8 +32,8 @@ namespace NuGet.LibraryModel.Tests
             var target = GetTarget();
 
             // Act
-            var clone = target.Clone();
-            clone.LibraryRange.Name = "SomethingElse";
+            var libraryRange = target.LibraryRange.WithName("SomethingElse");
+            var clone = target.WithLibraryRange(libraryRange);
 
             // Assert
             Assert.NotSame(target.LibraryRange, clone.LibraryRange);
@@ -43,11 +44,11 @@ namespace NuGet.LibraryModel.Tests
         public void LibraryDependency_ApplyCentralVersionInformation_NullArgumentCheck()
         {
             // Arrange
-            List<LibraryDependency> packageReferences = new List<LibraryDependency>();
+            ImmutableArray<LibraryDependency> packageReferences = [];
             Dictionary<string, CentralPackageVersion> centralPackageVersions = new Dictionary<string, CentralPackageVersion>();
 
             // Act + Assert
-            Assert.Throws<ArgumentNullException>(() => LibraryDependency.ApplyCentralVersionInformation(null!, centralPackageVersions));
+            Assert.Throws<ArgumentNullException>(() => LibraryDependency.ApplyCentralVersionInformation(default, centralPackageVersions));
             Assert.Throws<ArgumentNullException>(() => LibraryDependency.ApplyCentralVersionInformation(packageReferences, null!));
         }
 
@@ -67,7 +68,7 @@ namespace NuGet.LibraryModel.Tests
                 LibraryRange = new LibraryRange() { Name = "bazNotMerged" },
                 AutoReferenced = true
             };
-            List<LibraryDependency> deps = new List<LibraryDependency>() { dep1, dep2, dep3 };
+            ImmutableArray<LibraryDependency> deps = [dep1, dep2, dep3];
 
             var cpv1 = new CentralPackageVersion(dep1.Name.ToLower(), VersionRange.Parse("2.0.0"));
             var cpv2 = new CentralPackageVersion(dep2.Name.ToLower(), VersionRange.Parse("2.0.0"));
@@ -76,7 +77,10 @@ namespace NuGet.LibraryModel.Tests
             { [cpv1.Name] = cpv1, [cpv2.Name] = cpv2, [cpv3.Name] = cpv3 };
 
             // Act
-            LibraryDependency.ApplyCentralVersionInformation(deps, cpvs);
+            var newDependencies = LibraryDependency.ApplyCentralVersionInformation(deps, cpvs);
+            dep1 = newDependencies[0];
+            dep2 = newDependencies[1];
+            dep3 = newDependencies[2];
 
             // Assert
             Assert.True(dep1.VersionCentrallyManaged);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -220,7 +221,7 @@ namespace NuGet.PackageManagement.VisualStudio
             BuildIntegratedInstallationContext __,
             CancellationToken token)
         {
-            var dependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+            var dependency = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(
                     name: packageId,
@@ -423,7 +424,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var packageReferences = (await ProjectServices
                 .ReferencesReader
                 .GetPackageReferencesAsync(targetFramework, CancellationToken.None))
-                .ToList();
+                .ToImmutableArray();
 
 #pragma warning disable CS0618 // Type or member is obsolete
             // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
@@ -449,12 +450,13 @@ namespace NuGet.PackageManagement.VisualStudio
             if (isCpvmEnabled)
             {
                 // Add the central version information and merge the information to the package reference dependencies
-                projectTfi.CentralPackageVersions.AddRange(GetCentralPackageVersions());
-                LibraryDependency.ApplyCentralVersionInformation(projectTfi.Dependencies, projectTfi.CentralPackageVersions);
+                projectTfi = projectTfi.WithCentralPackageVersions(projectTfi.CentralPackageVersions.AddRange(GetCentralPackageVersions()));
+                var newDependencies = LibraryDependency.ApplyCentralVersionInformation(projectTfi.Dependencies, projectTfi.CentralPackageVersions);
+                projectTfi = projectTfi.WithDependencies(newDependencies);
             }
 
             // Apply fallback settings
-            AssetTargetFallbackUtility.ApplyFramework(projectTfi, packageTargetFallback, assetTargetFallback);
+            projectTfi = AssetTargetFallbackUtility.ApplyFramework(projectTfi, packageTargetFallback, assetTargetFallback);
 
             // Build up runtime information.
 

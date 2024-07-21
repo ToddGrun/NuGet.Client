@@ -167,12 +167,12 @@ namespace Test.Utility
 
                 if (privateAssets != null)
                 {
-                    libraryDependency.SuppressParent = privateAssets.Value;
+                    libraryDependency = libraryDependency.WithSuppressParent(privateAssets.Value);
                 }
 
                 if (libraryDependencyReferenceType != null)
                 {
-                    libraryDependency.ReferenceType = libraryDependencyReferenceType.Value;
+                    libraryDependency = libraryDependency.WithReferenceType(libraryDependencyReferenceType.Value);
                 }
 
                 _dependencies.Add(libraryDependency);

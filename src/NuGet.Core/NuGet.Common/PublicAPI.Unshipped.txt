@@ -4,3 +4,5 @@ NuGet.Common.HashAlgorithmName.SHA1 = 4 -> NuGet.Common.HashAlgorithmName
 NuGet.Common.NuGetLogCode.NU3043 = 3043 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1905 = 1905 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1508 = 1508 -> NuGet.Common.NuGetLogCode
+static NuGet.Common.MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(System.Collections.Immutable.ImmutableArray<System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode>> nugetLogCodeLists) -> System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode>
+static NuGet.Common.MSBuildStringUtility.GetNuGetLogCodes(string! s) -> System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode>

@@ -11,7 +11,7 @@ namespace NuGet.ProjectModel
 {
     public class CentralTransitiveDependencyGroup : IEquatable<CentralTransitiveDependencyGroup>
     {
-        public CentralTransitiveDependencyGroup(NuGetFramework framework, IEnumerable<LibraryDependency> transitiveDependencies)
+        public CentralTransitiveDependencyGroup(NuGetFramework framework, IList<LibraryDependency> transitiveDependencies)
         {
             if (framework == null)
             {
@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel
 
         public string FrameworkName { get; }
 
-        public IEnumerable<LibraryDependency> TransitiveDependencies { get; }
+        public IList<LibraryDependency> TransitiveDependencies { get; }
 
         public bool Equals(CentralTransitiveDependencyGroup other)
         {

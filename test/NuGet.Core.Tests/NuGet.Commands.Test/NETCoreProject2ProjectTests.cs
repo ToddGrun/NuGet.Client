@@ -243,10 +243,11 @@ namespace NuGet.Commands.Test
                 var spec = NETCoreRestoreTestUtility.GetProject(projectName: "projectA", framework: "netstandard1.6");
                 var specs = new[] { spec };
 
-                spec.TargetFrameworks.Single().Dependencies.Add(new LibraryDependency()
+                var newDependencies = spec.TargetFrameworks.Single().Dependencies.Add(new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
                 });
+                spec.TargetFrameworks[0] = spec.TargetFrameworks[0].WithDependencies(newDependencies);
 
                 // Create fake projects, the real data is in the specs
                 var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, spec);

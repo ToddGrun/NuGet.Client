@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace NuGet.Shared
@@ -125,6 +124,50 @@ namespace NuGet.Shared
 
                 divisor /= 10;
             }
+        }
+
+        public static int SingleIndex<T>(this IEnumerable<T> lst, Predicate<T> isMatch)
+        {
+            var index = 0;
+            var foundIndex = -1;
+
+            foreach (var item in lst)
+            {
+                if (isMatch(item))
+                {
+                    if (foundIndex != -1)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    foundIndex = index;
+                }
+
+                index++;
+            }
+
+            if (foundIndex == -1)
+            {
+                throw new InvalidOperationException();
+            }
+
+            return foundIndex;
+        }
+
+        public static int FirstIndex<T>(this IEnumerable<T> lst, Predicate<T> isMatch)
+        {
+            var index = 0;
+            foreach (var item in lst)
+            {
+                if (isMatch(item))
+                {
+                    return index;
+                }
+
+                index++;
+            }
+
+            throw new InvalidOperationException();
         }
     }
 }

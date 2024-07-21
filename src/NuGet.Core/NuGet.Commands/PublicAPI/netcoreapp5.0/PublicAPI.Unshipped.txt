@@ -3,6 +3,9 @@ NuGet.Commands.UpdateSourceArgs.AllowInsecureConnections.set -> void
 NuGet.Commands.UpdateSourceArgs.AllowInsecureConnections.get -> bool
 NuGet.Commands.AddSourceArgs.AllowInsecureConnections.set -> void
 NuGet.Commands.AddSourceArgs.AllowInsecureConnections.get -> bool
+~NuGet.Commands.PackageSpecificWarningProperties.AddRangeOfCodes(System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode> codes, string libraryId, NuGet.Frameworks.NuGetFramework framework) -> void
+~static NuGet.Commands.AssetTargetFallbackUtility.ApplyFramework(NuGet.ProjectModel.TargetFrameworkInformation targetFrameworkInfo, System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> packageTargetFallback, System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> assetTargetFallback) -> NuGet.ProjectModel.TargetFrameworkInformation
+~static NuGet.Commands.MSBuildRestoreUtility.ApplyIncludeFlags(NuGet.LibraryModel.LibraryDependency dependency, string includeAssets, string excludeAssets, string privateAssets) -> NuGet.LibraryModel.LibraryDependency
 ~static NuGet.Commands.MSBuildRestoreUtility.GetSdkAnalysisLevel(string sdkAnalysisLevel) -> NuGet.Versioning.NuGetVersion
 ~static NuGet.Commands.MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(string usingMicrosoftNETSdk) -> bool
 NuGet.Commands.RestoreCommandProvidersCache.GetOrCreate(string! globalPackagesPath, System.Collections.Generic.IReadOnlyList<string!>! fallbackPackagesPaths, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Core.Types.SourceRepository!>! packageSources, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Core.Types.SourceRepository!>! auditSources, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! log, bool updateLastAccess) -> NuGet.Commands.RestoreCommandProviders!

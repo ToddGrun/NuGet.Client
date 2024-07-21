@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -3516,20 +3515,18 @@ namespace NuGet.Commands.FuncTest
                 new TargetFrameworkInformation
                 {
                     FrameworkName = NuGetFramework.Parse("net5.0"),
-                    Dependencies = new List<LibraryDependency>(
-                        new[]
+                    Dependencies = [
+                        new LibraryDependency
                         {
-                            new LibraryDependency
-                            {
-                                LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
-                                    LibraryDependencyTarget.Package)
-                            },
-                            new LibraryDependency
-                            {
-                                LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
-                                    LibraryDependencyTarget.Package)
-                            },
-                        })
+                            LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
+                                LibraryDependencyTarget.Package)
+                        },
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
+                                LibraryDependencyTarget.Package)
+                        },
+                    ]
                 }
             })
             .Build();
@@ -3606,20 +3603,18 @@ namespace NuGet.Commands.FuncTest
                 new TargetFrameworkInformation
                 {
                     FrameworkName = NuGetFramework.Parse("net5.0"),
-                    Dependencies = new List<LibraryDependency>(
-                        new[]
+                    Dependencies = [
+                        new LibraryDependency
                         {
-                            new LibraryDependency
-                            {
-                                LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
-                                    LibraryDependencyTarget.Package)
-                            },
-                            new LibraryDependency
-                            {
-                                LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
-                                    LibraryDependencyTarget.Package)
-                            },
-                        })
+                            LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
+                                LibraryDependencyTarget.Package)
+                        },
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
+                                LibraryDependencyTarget.Package)
+                        },
+                    ]
                 }
             })
             .Build();

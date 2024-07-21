@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -257,7 +256,7 @@ namespace NuGet.DependencyResolver
                 // Look up any additional dependencies for this package
                 foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, libraryRange.Name).NoAllocEnumerate())
                 {
-                    var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                    var libraryDependency = new LibraryDependency()
                     {
                         LibraryRange = new LibraryRange()
                         {

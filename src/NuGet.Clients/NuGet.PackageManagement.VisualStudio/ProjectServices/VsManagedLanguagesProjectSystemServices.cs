@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -204,9 +205,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private static LibraryDependency ToPackageLibraryDependency(PackageReference reference, bool isCpvmEnabled)
         {
             // Get warning suppressions
-            IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(GetReferenceMetadataValue(reference, ProjectItemProperties.NoWarn));
+            ImmutableArray<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(GetReferenceMetadataValue(reference, ProjectItemProperties.NoWarn));
 
-            var dependency = new LibraryDependency(noWarn)
+            var dependency = new LibraryDependency()
             {
                 AutoReferenced = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.IsImplicitlyDefined)),
                 GeneratePathProperty = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.GeneratePathProperty)),
@@ -216,9 +217,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     name: reference.Name,
                     versionRange: ToVersionRange(reference.Version, isCpvmEnabled),
                     typeConstraint: LibraryDependencyTarget.Package),
+                NoWarn = noWarn,
             };
 
-            MSBuildRestoreUtility.ApplyIncludeFlags(
+            dependency = MSBuildRestoreUtility.ApplyIncludeFlags(
                 dependency,
                 GetReferenceMetadataValue(reference, ProjectItemProperties.IncludeAssets),
                 GetReferenceMetadataValue(reference, ProjectItemProperties.ExcludeAssets),

@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Construction;
@@ -208,23 +210,24 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         /// <param name="project">The <see cref="ProjectInstance" /> to get framework references for.</param>
         /// <returns>A <see cref="List{FrameworkDependency}" /> containing the framework references for the specified project.</returns>
-        internal static List<FrameworkDependency> GetFrameworkReferences(IMSBuildProject project)
+        internal static ImmutableHashSet<FrameworkDependency> GetFrameworkReferences(IMSBuildProject project)
         {
             // Get the unique FrameworkReference items, ignoring duplicates
             List<IMSBuildItem> frameworkReferenceItems = GetDistinctItemsOrEmpty(project, "FrameworkReference").ToList();
 
             // For best performance, its better to create a list with the exact number of items needed rather than using a LINQ statement or AddRange.  This is because if the list
             // is not allocated with enough items, the list has to be grown which can slow things down
-            var frameworkDependencies = new List<FrameworkDependency>(frameworkReferenceItems.Count);
+            var frameworkDependencies = new FrameworkDependency[frameworkReferenceItems.Count];
+            var index = 0;
 
             foreach (var frameworkReferenceItem in frameworkReferenceItems)
             {
                 var privateAssets = MSBuildStringUtility.Split(frameworkReferenceItem.GetProperty("PrivateAssets"));
 
-                frameworkDependencies.Add(new FrameworkDependency(frameworkReferenceItem.Identity, FrameworkDependencyFlagsUtils.GetFlags(privateAssets)));
+                frameworkDependencies[index++] = new FrameworkDependency(frameworkReferenceItem.Identity, FrameworkDependencyFlagsUtils.GetFlags(privateAssets));
             }
 
-            return frameworkDependencies;
+            return frameworkDependencies.ToImmutableHashSet();
         }
 
         /// <summary>
@@ -289,12 +292,13 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="project">The <see cref="ProjectInstance" /> to get package references for.</param>
         /// <param name="isCentralPackageVersionManagementEnabled">A flag for central package version management being enabled.</param>
         /// <returns>A <see cref="List{LibraryDependency}" /> containing the package references for the specified project.</returns>
-        internal static List<LibraryDependency> GetPackageReferences(IMSBuildProject project, bool isCentralPackageVersionManagementEnabled)
+        internal static ImmutableArray<LibraryDependency> GetPackageReferences(IMSBuildProject project, bool isCentralPackageVersionManagementEnabled)
         {
             // Get the distinct PackageReference items, ignoring duplicates
             List<IMSBuildItem> packageReferenceItems = GetDistinctItemsOrEmpty(project, "PackageReference").ToList();
 
-            var libraryDependencies = new List<LibraryDependency>(packageReferenceItems.Count);
+            var libraryDependencies = new LibraryDependency[packageReferenceItems.Count];
+            var libraryDependencyIndex = 0;
 
             foreach (var packageReferenceItem in packageReferenceItems)
             {
@@ -302,9 +306,9 @@ namespace NuGet.Build.Tasks.Console
 
                 string versionOverride = packageReferenceItem.GetProperty("VersionOverride");
 
-                IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn"));
+                ImmutableArray<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn"));
 
-                libraryDependencies.Add(new LibraryDependency(noWarn)
+                libraryDependencies[libraryDependencyIndex++] = new LibraryDependency()
                 {
                     AutoReferenced = packageReferenceItem.IsPropertyTrue("IsImplicitlyDefined"),
                     GeneratePathProperty = packageReferenceItem.IsPropertyTrue("GeneratePathProperty"),
@@ -316,10 +320,11 @@ namespace NuGet.Build.Tasks.Console
                         LibraryDependencyTarget.Package),
                     SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
                     VersionOverride = string.IsNullOrWhiteSpace(versionOverride) ? null : VersionRange.Parse(versionOverride),
-                });
+                    NoWarn = noWarn,
+                };
             }
 
-            return libraryDependencies;
+            return ImmutableCollectionsMarshal.AsImmutableArray(libraryDependencies);
         }
 
         /// <summary>
@@ -647,18 +652,26 @@ namespace NuGet.Build.Tasks.Console
 
                 AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallback, msBuildProjectInstance.FullPath);
 
-                AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInformation, packageTargetFallback, assetTargetFallback);
+                targetFrameworkInformation = AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInformation, packageTargetFallback, assetTargetFallback);
 
-                targetFrameworkInformation.Dependencies.AddRange(GetPackageReferences(msBuildProjectInstance, isCpvmEnabled));
+                targetFrameworkInformation = targetFrameworkInformation.WithDependencies(targetFrameworkInformation.Dependencies.AddRange(GetPackageReferences(msBuildProjectInstance, isCpvmEnabled)));
 
-                targetFrameworkInformation.DownloadDependencies.AddRange(GetPackageDownloads(msBuildProjectInstance));
+                targetFrameworkInformation = targetFrameworkInformation.WithDownloadDependencies(targetFrameworkInformation.DownloadDependencies.AddRange(GetPackageDownloads(msBuildProjectInstance)));
 
-                targetFrameworkInformation.FrameworkReferences.AddRange(GetFrameworkReferences(msBuildProjectInstance));
+                var frameworkReferences = targetFrameworkInformation.FrameworkReferences;
+                foreach (var frameworkReference in GetFrameworkReferences(msBuildProjectInstance))
+                {
+                    frameworkReferences = frameworkReferences.Add(frameworkReference);
+                }
+
+                targetFrameworkInformation = targetFrameworkInformation.WithFrameworkReferences(frameworkReferences);
 
                 if (isCpvmEnabled)
                 {
-                    targetFrameworkInformation.CentralPackageVersions.AddRange(GetCentralPackageVersions(msBuildProjectInstance));
-                    LibraryDependency.ApplyCentralVersionInformation(targetFrameworkInformation.Dependencies, targetFrameworkInformation.CentralPackageVersions);
+                    targetFrameworkInformation = targetFrameworkInformation.WithCentralPackageVersions(GetCentralPackageVersions(msBuildProjectInstance).ToImmutableDictionary());
+
+                    var newDependencies = LibraryDependency.ApplyCentralVersionInformation(targetFrameworkInformation.Dependencies, targetFrameworkInformation.CentralPackageVersions);
+                    targetFrameworkInformation = targetFrameworkInformation.WithDependencies(newDependencies);
                 }
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);

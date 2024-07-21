@@ -1641,7 +1641,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     typeConstraint: LibraryDependencyTarget.Package)
             };
 
-            packageSpec.TargetFrameworks.First().Dependencies.Add(dependency);
+            var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(dependency);
+            packageSpec.TargetFrameworks[0] = packageSpec.TargetFrameworks[0].WithDependencies(newDependencies);
+
             DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
             projectSystemCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, Array.Empty<IAssetsLogMessage>());
         }

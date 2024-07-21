@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Xunit;
 
@@ -10,10 +10,10 @@ namespace NuGet.Common.Test
         public void GetDistinctNuGetLogCodesOrDefault_SameLogCodes()
         {
             // Arrange
-            var logCodes1 = new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001 };
-            var logCodes2 = new List<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1000, };
+            ImmutableArray<NuGetLogCode> logCodes1 = [NuGetLogCode.NU1000, NuGetLogCode.NU1001];
+            ImmutableArray<NuGetLogCode> logCodes2 = [NuGetLogCode.NU1001, NuGetLogCode.NU1000];
 
-            var logCodesList = new List<IEnumerable<NuGetLogCode>>() { logCodes1, logCodes2 };
+            ImmutableArray<ImmutableArray<NuGetLogCode>> logCodesList = [logCodes1, logCodes2];
 
             // Act
             var result = MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(logCodesList);
@@ -27,7 +27,7 @@ namespace NuGet.Common.Test
         public void GetDistinctNuGetLogCodesOrDefault_EmptyLogCodes()
         {
             // Arrange
-            var logCodesList = new List<IEnumerable<NuGetLogCode>>();
+            ImmutableArray<ImmutableArray<NuGetLogCode>> logCodesList = [];
 
             // Act
             var result = MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(logCodesList);
@@ -40,25 +40,10 @@ namespace NuGet.Common.Test
         public void GetDistinctNuGetLogCodesOrDefault_DiffLogCodes()
         {
             // Arrange
-            var logCodes1 = new List<NuGetLogCode>() { NuGetLogCode.NU1000 };
-            var logCodes2 = new List<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1000 };
+            ImmutableArray<NuGetLogCode> logCodes1 = [NuGetLogCode.NU1000];
+            ImmutableArray<NuGetLogCode> logCodes2 = [NuGetLogCode.NU1001, NuGetLogCode.NU1000];
 
-            var logCodesList = new List<IEnumerable<NuGetLogCode>>() { logCodes1, logCodes2 };
-
-            // Act
-            var result = MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(logCodesList);
-
-            // Assert
-            Assert.Equal(0, result.Count());
-        }
-
-        [Fact]
-        public void GetDistinctNuGetLogCodesOrDefault_OneNullCode()
-        {
-            // Arrange
-            var logCodes1 = new List<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1000 };
-
-            var logCodesList = new List<IEnumerable<NuGetLogCode>>() { null!, logCodes1 };
+            ImmutableArray<ImmutableArray<NuGetLogCode>> logCodesList = [logCodes1, logCodes2];
 
             // Act
             var result = MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(logCodesList);
@@ -68,10 +53,12 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void GetDistinctNuGetLogCodesOrDefault_AllNullCodes()
+        public void GetDistinctNuGetLogCodesOrDefault_OneDefaultCode()
         {
             // Arrange
-            var logCodesList = new List<IEnumerable<NuGetLogCode>>() { null!, null! };
+            ImmutableArray<NuGetLogCode> logCodes1 = [NuGetLogCode.NU1001, NuGetLogCode.NU1000];
+
+            ImmutableArray<ImmutableArray<NuGetLogCode>> logCodesList = [default, logCodes1];
 
             // Act
             var result = MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(logCodesList);
@@ -81,11 +68,24 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void GetDistinctNuGetLogCodesOrDefault_NullCodesAfterFirst()
+        public void GetDistinctNuGetLogCodesOrDefault_AllDefaultCodes()
         {
             // Arrange
-            var logCodes1 = new List<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1000 };
-            var logCodesList = new List<IEnumerable<NuGetLogCode>>() { logCodes1, null! };
+            ImmutableArray<ImmutableArray<NuGetLogCode>> logCodesList = [default, default];
+
+            // Act
+            var result = MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(logCodesList);
+
+            // Assert
+            Assert.Equal(0, result.Count());
+        }
+
+        [Fact]
+        public void GetDistinctNuGetLogCodesOrDefault_DefaultCodesAfterFirst()
+        {
+            // Arrange
+            ImmutableArray<NuGetLogCode> logCodes1 = [NuGetLogCode.NU1001, NuGetLogCode.NU1000];
+            ImmutableArray<ImmutableArray<NuGetLogCode>> logCodesList = [logCodes1, default];
 
             // Act
             var result = MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(logCodesList);

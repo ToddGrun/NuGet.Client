@@ -147,13 +147,15 @@ namespace NuGet.Commands.Test
             };
 
             // Update the Target Alias.
-            foreach (var framework in updated.TargetFrameworks)
+            for (int i = 0; i < updated.TargetFrameworks.Count; i++)
             {
+                var framework = updated.TargetFrameworks[i];
                 if (string.IsNullOrEmpty(framework.TargetAlias))
                 {
-                    framework.TargetAlias = framework.FrameworkName.GetShortFolderName();
+                    updated.TargetFrameworks[i] = framework.WithTargetAlias(framework.FrameworkName.GetShortFolderName());
                 }
             }
+
             foreach (var framework in updated.TargetFrameworks)
             {
                 updated.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework.FrameworkName) { TargetAlias = framework.TargetAlias });

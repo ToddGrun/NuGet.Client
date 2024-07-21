@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Shared;
-using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
 {
@@ -166,18 +164,24 @@ namespace NuGet.PackageManagement
 
             if (developmentDependency)
             {
-                foreach (var frameworkInfo in lockFile.PackageSpec.TargetFrameworks
-                    .OrderBy(framework => framework.FrameworkName.ToString(),
-                        StringComparer.Ordinal))
+                for (var i = 0; i < lockFile.PackageSpec.TargetFrameworks.Count; i++)
                 {
-                    var dependency = frameworkInfo.Dependencies.First(dep => dep.Name.Equals(package.Id, StringComparison.OrdinalIgnoreCase));
+                    var frameworkInfo = lockFile.PackageSpec.TargetFrameworks[i];
 
-                    if (dependency?.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
-                        dependency?.IncludeType == LibraryIncludeFlags.All)
+                    var index = frameworkInfo.Dependencies.FirstIndex(dep => dep.Name.Equals(package.Id, StringComparison.OrdinalIgnoreCase));
+                    var dependency = frameworkInfo.Dependencies[index];
+
+                    if (dependency.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
+                        dependency.IncludeType == LibraryIncludeFlags.All)
                     {
                         var includeType = LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile;
-                        dependency.SuppressParent = LibraryIncludeFlags.All;
-                        dependency.IncludeType = includeType;
+                        dependency = dependency
+                            .WithSuppressParent(LibraryIncludeFlags.All)
+                            .WithIncludeType(includeType);
+
+                        var newDependencies = frameworkInfo.Dependencies.SetItem(index, dependency);
+                        frameworkInfo = frameworkInfo.WithDependencies(newDependencies);
+                        lockFile.PackageSpec.TargetFrameworks[i] = frameworkInfo;
 
                         // update lock file target libraries
                         foreach (var target in lockFile.Targets
