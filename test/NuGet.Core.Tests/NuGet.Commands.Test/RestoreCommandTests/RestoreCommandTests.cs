@@ -3310,7 +3310,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = true,
-                CentralPackageVersions = centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd)).ToImmutableDictionary(),
+                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd))),
                 Dependencies = dependencies,
                 FrameworkName = nugetFramework,
                 Warn = false,

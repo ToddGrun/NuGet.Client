@@ -988,7 +988,7 @@ namespace NuGet.Build.Tasks.Pack
             LibraryDependency[] updatedDependencies = new LibraryDependency[packageDependencies.Length];
 
             // Add each package dependency.
-            for (int i = 0; i < packageDependencies.Length; i++)
+            for (var i = 0; i < packageDependencies.Length; i++)
             {
                 var updatedPackageDependency = GetUpdatedPackageDependency(packageDependencies[i], assetsFile, framework, packageSpecificNoWarnProperties, dependencies);
                 updatedDependencies[i] = updatedPackageDependency;

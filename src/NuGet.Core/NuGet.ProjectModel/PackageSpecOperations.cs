@@ -30,7 +30,7 @@ namespace NuGet.ProjectModel
             if (spec == null) throw new ArgumentNullException(nameof(spec));
             if (dependency == null) throw new ArgumentNullException(nameof(dependency));
 
-            bool foundExistingDependency = false;
+            var foundExistingDependency = false;
             var range = dependency.VersionRange;
             var dependencyId = dependency.Id;
 
@@ -145,7 +145,7 @@ namespace NuGet.ProjectModel
             if (spec == null) throw new ArgumentNullException(nameof(spec));
             if (dependency == null) throw new ArgumentNullException(nameof(dependency));
 
-            for (int i = 0; i < spec.TargetFrameworks.Count; i++)
+            for (var i = 0; i < spec.TargetFrameworks.Count; i++)
             {
                 var targetFramework = spec.TargetFrameworks[i];
                 if (frameworksToAdd == null || frameworksToAdd.Contains(targetFramework.FrameworkName))
@@ -157,7 +157,7 @@ namespace NuGet.ProjectModel
 
             if (spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false)
             {
-                for (int i = 0; i < spec.TargetFrameworks.Count; i++)
+                for (var i = 0; i < spec.TargetFrameworks.Count; i++)
                 {
                     var targetFramework = spec.TargetFrameworks[i];
                     if (frameworksToAdd == null || frameworksToAdd.Contains(targetFramework.FrameworkName))
@@ -194,7 +194,7 @@ namespace NuGet.ProjectModel
             if (spec == null) throw new ArgumentNullException(nameof(spec));
             if (packageId == null) throw new ArgumentNullException(nameof(packageId));
 
-            for (int i = spec.Dependencies.Count - 1; i >= 0; i--)
+            for (var i = spec.Dependencies.Count - 1; i >= 0; i--)
             {
                 var dependency = spec.Dependencies[i];
                 if (IsMatchingDependencyName(dependency, packageId))
@@ -203,10 +203,10 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            for (int i = 0; i < spec.TargetFrameworks.Count; i++)
+            for (var i = 0; i < spec.TargetFrameworks.Count; i++)
             {
                 var framework = spec.TargetFrameworks[i];
-                int matchingDependencyCount = framework.Dependencies.Count(dep => IsMatchingDependencyName(dep, packageId));
+                var matchingDependencyCount = framework.Dependencies.Count(dep => IsMatchingDependencyName(dep, packageId));
                 if (matchingDependencyCount == 0)
                 {
                     continue;
@@ -238,12 +238,12 @@ namespace NuGet.ProjectModel
             string packageId,
             VersionRange range)
         {
-            bool existingDependency = list.Any(dep => IsMatchingDependencyName(dep, packageId));
+            var existingDependency = list.Any(dep => IsMatchingDependencyName(dep, packageId));
 
             if (existingDependency)
             {
                 var result = new LibraryDependency[list.Length];
-                for (int i = 0; i < list.Length; i++)
+                for (var i = 0; i < list.Length; i++)
                 {
                     var libraryDependency = list[i];
                     if (IsMatchingDependencyName(libraryDependency, packageId))
