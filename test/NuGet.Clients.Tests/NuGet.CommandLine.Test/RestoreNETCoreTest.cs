@@ -7498,8 +7498,8 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(1, lockFile.Targets.First().Libraries.Count);
                 Assert.Equal("FrameworkRef", string.Join(",", lockFile.Targets.First().Libraries.First().FrameworkReferences));
                 Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id, packageX.Version)), $"{packageX.ToString()} is not installed");
-                Assert.Equal("all", FrameworkDependencyFlagsUtils.GetFlagString(lockFile.PackageSpec.TargetFrameworks.Single().FrameworkReferences.First().PrivateAssets));
-                Assert.Equal("none", FrameworkDependencyFlagsUtils.GetFlagString(lockFile.PackageSpec.TargetFrameworks.Single().FrameworkReferences.Last().PrivateAssets));
+                Assert.True(1 == lockFile.PackageSpec.TargetFrameworks.Single().FrameworkReferences.Count(dep => FrameworkDependencyFlagsUtils.GetFlagString(dep.PrivateAssets) == "all"));
+                Assert.True(1 == lockFile.PackageSpec.TargetFrameworks.Single().FrameworkReferences.Count(dep => FrameworkDependencyFlagsUtils.GetFlagString(dep.PrivateAssets) == "none"));
 
                 // Assert 2
                 Assert.True(File.Exists(projectB.AssetsFileOutputPath), r.AllOutput);
