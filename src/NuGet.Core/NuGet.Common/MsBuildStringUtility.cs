@@ -109,19 +109,7 @@ namespace NuGet.Common
                 if (split[i].StartsWith("NU", StringComparison.OrdinalIgnoreCase) &&
                     Enum.TryParse(value: split[i], ignoreCase: true, out NuGetLogCode logCode))
                 {
-                    if (logCodes == null)
-                    {
-                        logCodes = ArrayPool<NuGetLogCode>.Shared.Rent(split.Length);
-                    }
-                    else if (logCodes.Length == index)
-                    {
-                        var oldItems = logCodes;
-
-                        logCodes = ArrayPool<NuGetLogCode>.Shared.Rent(logCodes.Length * 2);
-                        oldItems.CopyTo(logCodes, index: 0);
-
-                        ArrayPool<NuGetLogCode>.Shared.Return(oldItems);
-                    }
+                    logCodes ??= ArrayPool<NuGetLogCode>.Shared.Rent(split.Length);
 
                     logCodes[index++] = logCode;
                 }
