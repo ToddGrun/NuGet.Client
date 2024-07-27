@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
@@ -1158,8 +1159,9 @@ namespace NuGet.Commands
                 var index = spec.TargetFrameworks.FirstIndex(f => targetAlias.Equals(f.TargetAlias, StringComparison.OrdinalIgnoreCase));
                 var frameworkInfo = spec.TargetFrameworks[index];
 
-                var newCentralPackageVersions = frameworkInfo.CentralPackageVersions.AddRange(versions);
-                frameworkInfo = frameworkInfo.WithCentralPackageVersions(newCentralPackageVersions);
+                var newCentralPackageVersions = new Dictionary<string, CentralPackageVersion>(frameworkInfo.CentralPackageVersions);
+                newCentralPackageVersions.AddRange(versions);
+                frameworkInfo = frameworkInfo.WithCentralPackageVersions(newCentralPackageVersions.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase));
 
                 var newDependencies = LibraryDependency.ApplyCentralVersionInformation(frameworkInfo.Dependencies, frameworkInfo.CentralPackageVersions);
                 frameworkInfo = frameworkInfo.WithDependencies(newDependencies);

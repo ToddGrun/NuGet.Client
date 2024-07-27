@@ -450,7 +450,8 @@ namespace NuGet.PackageManagement.VisualStudio
             if (isCpvmEnabled)
             {
                 // Add the central version information and merge the information to the package reference dependencies
-                projectTfi = projectTfi.WithCentralPackageVersions(projectTfi.CentralPackageVersions.AddRange(GetCentralPackageVersions()));
+                var newCentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions(projectTfi.CentralPackageVersions.Concat(GetCentralPackageVersions()));
+                projectTfi = projectTfi.WithCentralPackageVersions(newCentralPackageVersions);
                 var newDependencies = LibraryDependency.ApplyCentralVersionInformation(projectTfi.Dependencies, projectTfi.CentralPackageVersions);
                 projectTfi = projectTfi.WithDependencies(newDependencies);
             }

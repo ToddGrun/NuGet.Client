@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using NuGet.Common;
@@ -13,7 +14,8 @@ namespace NuGet.ProjectModel
 {
     public class TargetFrameworkInformation : IEquatable<TargetFrameworkInformation>
     {
-        public static ImmutableDictionary<string, CentralPackageVersion> EmptyCentralPackageVersions = ImmutableDictionary<string, CentralPackageVersion>.Empty.WithComparers(StringComparer.OrdinalIgnoreCase);
+        public static FrozenDictionary<string, CentralPackageVersion> ToCentralPackageVersions(IEnumerable<KeyValuePair<string, CentralPackageVersion>> versions)
+            => versions != null ? versions.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase) : FrozenDictionary<string, CentralPackageVersion>.Empty;
 
         public string TargetAlias { get; init; }
 
@@ -45,7 +47,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Package versions defined in the Central package versions management file. 
         /// </summary>
-        public ImmutableDictionary<string, CentralPackageVersion> CentralPackageVersions { get; init; }
+        public FrozenDictionary<string, CentralPackageVersion> CentralPackageVersions { get; init; }
 
         /// <summary>
         /// A set of unique FrameworkReferences
@@ -63,7 +65,7 @@ namespace NuGet.ProjectModel
             Dependencies = [];
             Imports = [];
             DownloadDependencies = [];
-            CentralPackageVersions = EmptyCentralPackageVersions;
+            CentralPackageVersions = ToCentralPackageVersions(versions: null);
             FrameworkReferences = ImmutableHashSet<FrameworkDependency>.Empty;
         }
 
@@ -138,9 +140,29 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Returns copy of this with specified versions defined in the Central package versions management file. 
         /// </summary>
-        public TargetFrameworkInformation WithCentralPackageVersions(ImmutableDictionary<string, CentralPackageVersion> versions)
+        public TargetFrameworkInformation WithCentralPackageVersions(FrozenDictionary<string, CentralPackageVersion> versions)
         {
-            versions ??= EmptyCentralPackageVersions;
+            versions ??= ToCentralPackageVersions(null);
+
+            if (CentralPackageVersions == versions)
+            {
+                return this;
+            }
+
+            return new TargetFrameworkInformation(this)
+            {
+                CentralPackageVersions = versions
+            };
+        }
+
+        public TargetFrameworkInformation WithUpdatedCentralPackageVersions(IEnumerable<KeyValuePair<string, CentralPackageVersion>> versions)
+        {
+            if (versions == null)
+            {
+                return this;
+            }
+
+            versions ??= ToCentralPackageVersions(null);
 
             if (CentralPackageVersions == versions)
             {

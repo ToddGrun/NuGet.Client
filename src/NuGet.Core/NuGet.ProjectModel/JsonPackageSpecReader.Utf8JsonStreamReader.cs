@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
@@ -1899,7 +1900,7 @@ namespace NuGet.ProjectModel
             var targetFrameworkInformation = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = assetTargetFallback,
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange(centralPackageVersions ?? []),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions(centralPackageVersions),
                 Dependencies = dependencies != null ? dependencies.ToImmutableArray() : [],
                 DownloadDependencies = downloadDependencies != null ? downloadDependencies.ToImmutableArray() : [],
                 FrameworkReferences = frameworkReferences != null ? frameworkReferences.ToImmutableHashSet() : [],

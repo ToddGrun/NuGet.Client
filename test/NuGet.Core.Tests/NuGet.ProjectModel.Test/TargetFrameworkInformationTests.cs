@@ -309,14 +309,14 @@ namespace NuGet.ProjectModel.Test
             var leftVersions = left.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
             var leftSide = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange(leftVersions),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions(leftVersions),
                 FrameworkName = NuGetFramework.AnyFramework
             };
 
             var rightVersions = right.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
             var rightSide = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange(rightVersions),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions(rightVersions),
                 FrameworkName = NuGetFramework.AnyFramework
             };
 
@@ -566,14 +566,14 @@ namespace NuGet.ProjectModel.Test
             var leftVersions = left.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
             var leftSide = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange(leftVersions),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions(leftVersions),
                 FrameworkName = NuGetFramework.AnyFramework
             };
 
             var rightVersions = right.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
             var rightSide = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange(rightVersions),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions(rightVersions),
                 FrameworkName = NuGetFramework.AnyFramework
             };
 
@@ -609,7 +609,7 @@ namespace NuGet.ProjectModel.Test
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = assetTargetFallback,
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange(versions),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions(versions),
                 Dependencies = [dependencyFoo],
                 DownloadDependencies = [downloadDependency],
                 FrameworkName = nugetFramework,

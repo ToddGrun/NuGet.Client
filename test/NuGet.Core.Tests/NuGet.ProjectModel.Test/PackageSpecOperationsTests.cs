@@ -423,7 +423,7 @@ namespace NuGet.ProjectModel.Test
 
             var frameworkB = new TargetFrameworkInformation
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([new KeyValuePair<string, CentralPackageVersion>(ld.Name, new CentralPackageVersion(ld.Name, ld.LibraryRange.VersionRange))]),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>(ld.Name, new CentralPackageVersion(ld.Name, ld.LibraryRange.VersionRange))]),
                 FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard16,
                 Dependencies = [ld],
             };

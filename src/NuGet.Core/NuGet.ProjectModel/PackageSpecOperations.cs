@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -162,8 +163,10 @@ namespace NuGet.ProjectModel
                     var targetFramework = spec.TargetFrameworks[i];
                     if (frameworksToAdd == null || frameworksToAdd.Contains(targetFramework.FrameworkName))
                     {
-                        var newCentralPackageVersions = targetFramework.CentralPackageVersions.SetItem(dependency.Id, new CentralPackageVersion(dependency.Id, dependency.VersionRange));
-                        spec.TargetFrameworks[i] = targetFramework.WithCentralPackageVersions(newCentralPackageVersions);
+                        var newCentralPackageVersions = new Dictionary<string, CentralPackageVersion>(targetFramework.CentralPackageVersions);
+
+                        newCentralPackageVersions[dependency.Id] = new CentralPackageVersion(dependency.Id, dependency.VersionRange);
+                        spec.TargetFrameworks[i] = targetFramework.WithCentralPackageVersions(newCentralPackageVersions.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase));
                     }
                 }
             }

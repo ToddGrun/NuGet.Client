@@ -110,7 +110,7 @@ namespace NuGet.ProjectModel.Test
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = true,
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd))),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd))),
                 Warn = false,
                 FrameworkName = nugetFramework,
                 Dependencies = dependencies,

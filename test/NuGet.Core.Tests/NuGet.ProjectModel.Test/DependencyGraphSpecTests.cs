@@ -732,7 +732,7 @@ namespace NuGet.ProjectModel.Test
             var tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = assetTargetFallback,
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([
                     new KeyValuePair<string, CentralPackageVersion>(centralVersionFoo.Name, centralVersionFoo),
                     new KeyValuePair<string, CentralPackageVersion>(centralVersionBar.Name, centralVersionBar)
                 ]),
@@ -744,14 +744,14 @@ namespace NuGet.ProjectModel.Test
             var newDependencies = LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
             tfi = tfi.WithDependencies(newDependencies);
 
-            var centralPackageVersions = tfi.CentralPackageVersions;
+            var centralPackageVersions = new Dictionary<string, CentralPackageVersion>(tfi.CentralPackageVersions);
             for (int i = 0; i < centralVersionsDummyLoadCount; i++)
             {
                 var dummy = new CentralPackageVersion($"Dummy{i}", VersionRange.Parse("1.0.0"));
-                centralPackageVersions = centralPackageVersions.Add(dummy.Name, dummy);
+                centralPackageVersions.Add(dummy.Name, dummy);
             }
 
-            return tfi.WithCentralPackageVersions(centralPackageVersions);
+            return tfi.WithCentralPackageVersions(TargetFrameworkInformation.ToCentralPackageVersions(centralPackageVersions));
         }
 
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(ImmutableArray<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
@@ -761,7 +761,7 @@ namespace NuGet.ProjectModel.Test
             var tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = true,
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd))),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd))),
                 Warn = false,
                 FrameworkName = nugetFramework,
                 Dependencies = dependencies,

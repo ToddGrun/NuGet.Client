@@ -287,7 +287,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([
                     new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
                     new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
                 ]),
@@ -350,7 +350,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([
                     new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
                     new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
                 ]),
@@ -409,7 +409,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([
                     new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
                     new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
                 ]),
@@ -467,7 +467,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([
                     new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
                     new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
                 ]),
@@ -525,7 +525,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([
                     new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
                     new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
                 ]),
@@ -587,7 +587,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
 
             var tfm = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([
                     new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
                     new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
                 ]),

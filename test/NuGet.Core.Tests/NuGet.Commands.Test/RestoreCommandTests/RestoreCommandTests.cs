@@ -2534,7 +2534,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                                     VersionCentrallyManaged = true,
                                 },
                             ],
-                            CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))])
+                            CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))])
                         }
                     })
                     .WithCentralPackageVersionsEnabled()
@@ -2549,7 +2549,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                         {
                             FrameworkName = NuGetFramework.Parse("net46"),
                             Dependencies = [],
-                            CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]),
+                            CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]),
                         }
                     })
                     .WithCentralPackageVersionsEnabled()
@@ -3310,7 +3310,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = true,
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd))),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd))),
                 Dependencies = dependencies,
                 FrameworkName = nugetFramework,
                 Warn = false,

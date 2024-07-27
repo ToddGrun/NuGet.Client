@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
@@ -520,7 +521,7 @@ namespace NuGet.ProjectModel
         /// 2. If a central version that is a transitive dependency is removed from CPVM the lock file is invalidated.
         /// </summary>
         private static (bool, string) HasProjectTransitiveDependencyChanged(
-            ImmutableDictionary<string, CentralPackageVersion> centralPackageVersions,
+            FrozenDictionary<string, CentralPackageVersion> centralPackageVersions,
             IList<LockFileDependency> lockFileCentralTransitiveDependencies,
             IList<LockFileDependency> lockTransitiveDependencies)
         {

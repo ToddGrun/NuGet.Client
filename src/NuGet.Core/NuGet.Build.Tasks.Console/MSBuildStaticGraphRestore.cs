@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -271,7 +272,7 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>An <see cref="IEnumerable{CentralPackageVersion}" /> containing the package versions for the specified project.</returns>
         internal static Dictionary<string, CentralPackageVersion> GetCentralPackageVersions(IMSBuildProject project)
         {
-            var result = new Dictionary<string, CentralPackageVersion>();
+            var result = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
             IEnumerable<IMSBuildItem> packageVersionItems = GetDistinctItemsOrEmpty(project, "PackageVersion");
 
             foreach (var projectItemInstance in packageVersionItems)
@@ -668,7 +669,7 @@ namespace NuGet.Build.Tasks.Console
 
                 if (isCpvmEnabled)
                 {
-                    targetFrameworkInformation = targetFrameworkInformation.WithCentralPackageVersions(GetCentralPackageVersions(msBuildProjectInstance).ToImmutableDictionary());
+                    targetFrameworkInformation = targetFrameworkInformation.WithCentralPackageVersions(GetCentralPackageVersions(msBuildProjectInstance).ToFrozenDictionary(StringComparer.OrdinalIgnoreCase));
 
                     var newDependencies = LibraryDependency.ApplyCentralVersionInformation(targetFrameworkInformation.Dependencies, targetFrameworkInformation.CentralPackageVersions);
                     targetFrameworkInformation = targetFrameworkInformation.WithDependencies(newDependencies);

@@ -728,7 +728,7 @@ namespace NuGet.ProjectModel.Test
             var originalTargetFrameworkInformation = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = false,
-                CentralPackageVersions = TargetFrameworkInformation.EmptyCentralPackageVersions.AddRange([new KeyValuePair<string, CentralPackageVersion>("CVD", new CentralPackageVersion("CVD", VersionRange.Parse("1.0.0")))]),
+                CentralPackageVersions = TargetFrameworkInformation.ToCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("CVD", new CentralPackageVersion("CVD", VersionRange.Parse("1.0.0")))]),
                 Dependencies = [dependency],
                 DownloadDependencies = [new DownloadDependency("X", VersionRange.Parse("1.0.0"))],
                 FrameworkName = framework,
