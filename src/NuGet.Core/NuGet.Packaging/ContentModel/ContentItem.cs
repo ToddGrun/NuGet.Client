@@ -9,6 +9,28 @@ namespace NuGet.ContentModel
 {
     public class ContentItem
     {
+        internal ContentItemData _backingData;
+
+        public required string Path
+        {
+            get => _backingData.Path;
+            init => _backingData = new ContentItemData() { Path = value };
+        }
+
+        public Dictionary<string, object> Properties
+        {
+            get => _backingData.Properties;
+            internal set => _backingData.Properties = value;
+        }
+
+        internal bool TryGetValue(string key, out object? value) => _backingData.TryGetValue(key, out value);
+        internal void Add(string key, object value) => _backingData.Add(key, value);
+
+        public override string ToString() => _backingData.ToString();
+    }
+
+    internal struct ContentItemData
+    {
         // These must match ManagedCodeConventions.PropertyNames. They cannot be used since they're static and switch requires const.
         internal const string TargetFrameworkMoniker = "tfm";
         internal const string RuntimeIdentifier = "rid";
@@ -23,7 +45,9 @@ namespace NuGet.ContentModel
         internal const string Related = "related";
         internal const string TfmRaw = "tfm_raw";
 
-        public required string Path { get; init; }
+        public string Path { get; set; }
+
+        public bool IsDefault => Path == null;
 
         internal Dictionary<string, object>? _properties;
 

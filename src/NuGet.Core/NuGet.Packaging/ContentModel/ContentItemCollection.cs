@@ -19,7 +19,7 @@ namespace NuGet.ContentModel
         private static readonly ReadOnlyMemory<char> Winmd = ".winmd".AsMemory();
 
         private static readonly SimplePool<List<Asset>> ListAssetPool = new(() => new List<Asset>());
-        private static readonly SimplePool<Dictionary<ContentItem, List<Asset>>> GroupAssetsPool = new(() => new(GroupComparer.DefaultComparer));
+        private static readonly SimplePool<Dictionary<ContentItemData, List<Asset>>> GroupAssetsPool = new(() => new(GroupComparer.DefaultComparer));
 
         private List<Asset>? _assets;
         private ConcurrentDictionary<ReadOnlyMemory<char>, string?>? _assemblyRelatedExtensions;
@@ -87,13 +87,13 @@ namespace NuGet.ContentModel
             {
                 var groupPatterns = definition.GroupExpressions;
 
-                Dictionary<ContentItem, List<Asset>>? groupAssets = null;
+                Dictionary<ContentItemData, List<Asset>>? groupAssets = null;
                 foreach (var asset in _assets)
                 {
                     foreach (var groupPattern in groupPatterns)
                     {
                         var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
-                        if (item != null)
+                        if (!item.IsDefault)
                         {
                             groupAssets ??= GroupAssetsPool.Allocate();
                             if (!groupAssets.TryGetValue(item, out var assets))
@@ -143,13 +143,13 @@ namespace NuGet.ContentModel
             {
                 var groupPatterns = definition.GroupExpressions;
 
-                Dictionary<ContentItem, List<Asset>>? groupAssets = null;
+                Dictionary<ContentItemData, List<Asset>>? groupAssets = null;
                 foreach (var asset in _assets)
                 {
                     foreach (var groupPattern in groupPatterns)
                     {
                         var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
-                        if (item != null)
+                        if (!item.IsDefault)
                         {
                             groupAssets ??= GroupAssetsPool.Allocate();
                             if (!groupAssets.TryGetValue(item, out var assets))
@@ -306,18 +306,23 @@ namespace NuGet.ContentModel
 
                 foreach (var pathPattern in pathPatterns)
                 {
-                    var contentItem = pathPattern.Match(path, definition.PropertyDefinitions);
-                    if (contentItem != null)
+                    var contentItemData = pathPattern.Match(path, definition.PropertyDefinitions);
+                    if (!contentItemData.IsDefault)
                     {
                         //If the item is assembly, populate the "related files extensions property".
-                        if (contentItem.TryGetValue(ManagedCodeConventions.PropertyNames.ManagedAssembly, out _))
+                        if (contentItemData.TryGetValue(ManagedCodeConventions.PropertyNames.ManagedAssembly, out _))
                         {
-                            string? relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(contentItem.Path, assets);
+                            string? relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(contentItemData.Path, assets);
                             if (relatedFileExtensionsProperty is not null)
                             {
-                                contentItem.Add("related", relatedFileExtensionsProperty);
+                                contentItemData.Add("related", relatedFileExtensionsProperty);
                             }
                         }
+                        var contentItem = new ContentItem()
+                        {
+                            Path = path,
+                            _backingData = contentItemData
+                        };
                         items.Add(contentItem);
                         break;
                     }
@@ -416,11 +421,11 @@ namespace NuGet.ContentModel
             return false;
         }
 
-        internal class GroupComparer : IEqualityComparer<ContentItem>
+        internal class GroupComparer : IEqualityComparer<ContentItemData>
         {
             public static readonly GroupComparer DefaultComparer = new GroupComparer();
 
-            public int GetHashCode(ContentItem obj)
+            public int GetHashCode(ContentItemData obj)
             {
                 var hashCode = 0;
                 if (obj._properties != null)
@@ -432,7 +437,7 @@ namespace NuGet.ContentModel
 #else
                         hashCode ^= property.Key.GetHashCode(StringComparison.Ordinal);
 #endif
-                        hashCode ^= property.Value.GetHashCode();
+                        hashCode ^= property.GetHashCode();
                     }
                 }
                 else
@@ -477,17 +482,8 @@ namespace NuGet.ContentModel
                 return hashCode;
             }
 
-            public bool Equals(ContentItem? x, ContentItem? y)
+            public bool Equals(ContentItemData x, ContentItemData y)
             {
-                if (ReferenceEquals(x, y))
-                {
-                    return true;
-                }
-                if (x is null || y is null)
-                {
-                    return false;
-                }
-
                 if (x._properties == null && y._properties != null)
                 {
                     return false;

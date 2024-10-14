@@ -64,29 +64,28 @@ namespace NuGet.ContentModel.Infrastructure
             }
         }
 
-        internal ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
+        internal ContentItemData Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
         {
-            ContentItem item = null;
+            ContentItemData item = default;
             var startIndex = 0;
             foreach (var segment in _segments)
             {
                 int endIndex;
-                if (segment.TryMatch(ref item, path, propertyDefinitions, startIndex, out endIndex))
+                if (!segment.TryMatch(ref item, path, propertyDefinitions, startIndex, out endIndex))
                 {
-                    startIndex = endIndex;
-                    continue;
+                    return default;
                 }
-                return null;
+                startIndex = endIndex;
             }
 
             if (startIndex == path.Length)
             {
                 // Successful match!
                 // Apply defaults from the pattern
-                if (item == null)
+                if (item.IsDefault)
                 {
                     // item not created, use shared defaults
-                    item = new ContentItem
+                    item = new ContentItemData
                     {
                         Path = path,
                         Properties = _defaults
@@ -102,12 +101,12 @@ namespace NuGet.ContentModel.Infrastructure
                 }
                 return item;
             }
-            return null;
+            return default;
         }
 
         private abstract class Segment
         {
-            internal abstract bool TryMatch(ref ContentItem item, string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex);
+            internal abstract bool TryMatch(ref ContentItemData item, string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex);
         }
 
         [DebuggerDisplay("{_pattern.Substring(_start, _length)}")]
@@ -125,7 +124,7 @@ namespace NuGet.ContentModel.Infrastructure
             }
 
             internal override bool TryMatch(
-                ref ContentItem item,
+                ref ContentItemData item,
                 string path,
                 IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions,
                 int startIndex,
@@ -168,7 +167,7 @@ namespace NuGet.ContentModel.Infrastructure
             }
 
             internal override bool TryMatch(
-                ref ContentItem item,
+                ref ContentItemData item,
                 string path,
                 IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions,
                 int startIndex,
@@ -204,9 +203,9 @@ namespace NuGet.ContentModel.Infrastructure
                         if (!_matchOnly)
                         {
                             // Adding property, create item if not already created
-                            if (item == null)
+                            if (item.IsDefault)
                             {
-                                item = new ContentItem
+                                item = new ContentItemData
                                 {
                                     Path = path
                                 };
