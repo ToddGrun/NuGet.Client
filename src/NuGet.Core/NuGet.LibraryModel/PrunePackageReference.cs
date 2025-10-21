@@ -39,7 +39,15 @@ namespace NuGet.LibraryModel
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PrunePackageReferenceMissingVersion, name));
             }
 
-            return new PrunePackageReference(name, VersionRange.Parse("(," + version + "]"));
+            var versionSpan = version.Length < 200
+                ? stackalloc char[version.Length]
+                : new char[version.Length];
+
+            versionSpan[0] = '(';
+            versionSpan[1] = ',';
+            version.AsSpan().CopyTo(versionSpan.Slice(2));
+            versionSpan[versionSpan.Length - 1] = '(';
+            return new PrunePackageReference(name, VersionRange.Parse(versionSpan));
         }
 
         public override string ToString()

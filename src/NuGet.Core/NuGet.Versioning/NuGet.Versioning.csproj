@@ -26,6 +26,10 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Memory" />
+  </ItemGroup>
+
   <ItemGroup Label="NuGet Shared">
     <Compile Include="$(SharedDirectory)\EqualityUtility.cs" />
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />

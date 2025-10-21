@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Versioning
 {
@@ -17,7 +18,7 @@ namespace NuGet.Versioning
         private const int ParsedVersionRangeMappingMaxEntries = 500;
 
         // Cached mappings from (string value, bool allowFloating) => VersionRange. On cache hit, avoids allocations during TryParse.
-        private static Dictionary<(string, bool), VersionRange> ParsedVersionRangeMapping = new Dictionary<(string, bool), VersionRange>(ParsedVersionRangeMappingMaxEntries);
+        private static Dictionary<int, (string, bool, VersionRange)> ParsedVersionRangeMapping = new Dictionary<int, (string, bool, VersionRange)>(ParsedVersionRangeMappingMaxEntries);
 
         /// <summary>
         /// A range that accepts all versions, prerelease and stable.
@@ -65,6 +66,22 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
+        /// The version string is either a simple version or an arithmetic range
+        /// e.g.
+        /// 1.0         --> 1.0 ≤ x
+        /// (,1.0]      --> x ≤ 1.0
+        /// (,1.0)      --> x &lt; 1.0
+        /// [1.0]       --> x == 1.0
+        /// (1.0,)      --> 1.0 &lt; x
+        /// (1.0, 2.0)   --> 1.0 &lt; x &lt; 2.0
+        /// [1.0, 2.0]   --> 1.0 ≤ x ≤ 2.0
+        /// </summary>
+        public static VersionRange Parse(ReadOnlySpan<char> value)
+        {
+            return Parse(value, true);
+        }
+
+        /// <summary>
         /// Direct parse
         /// </summary>
         public static VersionRange Parse(string value, bool allowFloating)
@@ -74,12 +91,20 @@ namespace NuGet.Versioning
                 throw new ArgumentNullException(nameof(value));
             }
 
+            return Parse(value.AsSpan(), allowFloating);
+        }
+
+        /// <summary>
+        /// Direct parse
+        /// </summary>
+        public static VersionRange Parse(ReadOnlySpan<char> value, bool allowFloating)
+        {
             VersionRange? versionInfo;
             if (!TryParse(value, allowFloating, out versionInfo))
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
-                        Resources.Invalidvalue, value));
+                        Resources.Invalidvalue, value.ToString()));
             }
 
             return versionInfo;
@@ -96,24 +121,58 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parses a VersionRange from its string representation.
         /// </summary>
+        public static bool TryParse(ReadOnlySpan<char> value, [NotNullWhen(true)] out VersionRange? versionRange)
+        {
+            return TryParse(value, true, out versionRange);
+        }
+
+        /// <summary>
+        /// Parses a VersionRange from its string representation.
+        /// </summary>
         public static bool TryParse(string value, bool allowFloating, [NotNullWhen(true)] out VersionRange? versionRange)
         {
-            versionRange = null;
-
             if (value is null)
             {
+                versionRange = null;
                 return false;
             }
 
+            return TryParse(value.AsSpan(), allowFloating, out versionRange);
+        }
+
+        private static bool Asserted = false;
+
+        /// <summary>
+        /// Parses a VersionRange from its string representation.
+        /// </summary>
+        public static bool TryParse(ReadOnlySpan<char> value, bool allowFloating, [NotNullWhen(true)] out VersionRange? versionRange)
+        {
+            if (!Asserted)
+            {
+                Asserted = true;
+                System.Diagnostics.Debugger.Launch();
+            }
+
+            versionRange = null;
+
+            var hash = GetHash(value, allowFloating);
             lock (ParsedVersionRangeMapping)
             {
-                if (ParsedVersionRangeMapping.TryGetValue((value, allowFloating), out versionRange))
+                if (ParsedVersionRangeMapping.TryGetValue(hash, out var foundEntry))
                 {
-                    return true;
+                    var (foundValue, foundAllowFloating, foundVersionRange) = foundEntry;
+
+                    if (foundAllowFloating == allowFloating
+                        && foundValue.AsSpan().SequenceEqual(value))
+                    {
+                        versionRange = foundVersionRange;
+                        return true;
+                    }
                 }
             }
 
-            var trimmedValue = value.Trim();
+            var originalValue = value.ToString();
+            var trimmedValue = originalValue.Trim();
             if (string.IsNullOrEmpty(trimmedValue))
             {
                 return false;
@@ -126,9 +185,9 @@ namespace NuGet.Versioning
                 && charArray.Length == 1
                 && charArray[0] == '*')
             {
-                versionRange = new VersionRange(new NuGetVersion(0, 0, 0), true, null, true, FloatRange.Parse(trimmedValue), originalString: value);
+                versionRange = new VersionRange(new NuGetVersion(0, 0, 0), true, null, true, FloatRange.Parse(trimmedValue), originalString: originalValue);
 
-                UpdateCachedVersionRange(value, allowFloating, versionRange);
+                UpdateCachedVersionRange(hash, originalValue, allowFloating, versionRange);
 
                 return true;
             }
@@ -287,14 +346,28 @@ namespace NuGet.Versioning
                 maxVersion: maxVersion,
                 includeMaxVersion: isMaxInclusive,
                 floatRange: floatRange,
-                originalString: value);
+                originalString: originalValue);
 
-            UpdateCachedVersionRange(value, allowFloating, versionRange);
+            UpdateCachedVersionRange(hash, originalValue, allowFloating, versionRange);
 
             return true;
         }
 
-        private static void UpdateCachedVersionRange(string value, bool allowFloating, VersionRange versionRange)
+        private static int GetHash(ReadOnlySpan<char> list, bool allowFloating)
+        {
+            var combiner = new HashCodeCombiner();
+
+            foreach (var item in list)
+            {
+                combiner.AddObject(item.GetHashCode());
+            }
+
+            combiner.AddObject(allowFloating);
+
+            return combiner.CombinedHash;
+        }
+
+        private static void UpdateCachedVersionRange(int hash, string value, bool allowFloating, VersionRange versionRange)
         {
             lock (ParsedVersionRangeMapping)
             {
@@ -303,7 +376,7 @@ namespace NuGet.Versioning
                     ParsedVersionRangeMapping.Clear();
                 }
 
-                ParsedVersionRangeMapping[(value, allowFloating)] = versionRange;
+                ParsedVersionRangeMapping[hash] = (value, allowFloating, versionRange);
             }
         }
 

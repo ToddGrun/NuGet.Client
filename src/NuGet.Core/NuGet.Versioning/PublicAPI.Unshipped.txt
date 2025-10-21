@@ -1,1 +1,5 @@
 #nullable enable
+static NuGet.Versioning.VersionRange.Parse(System.ReadOnlySpan<char> value) -> NuGet.Versioning.VersionRange!
+static NuGet.Versioning.VersionRange.Parse(System.ReadOnlySpan<char> value, bool allowFloating) -> NuGet.Versioning.VersionRange!
+static NuGet.Versioning.VersionRange.TryParse(System.ReadOnlySpan<char> value, bool allowFloating, out NuGet.Versioning.VersionRange? versionRange) -> bool
+static NuGet.Versioning.VersionRange.TryParse(System.ReadOnlySpan<char> value, out NuGet.Versioning.VersionRange? versionRange) -> bool
