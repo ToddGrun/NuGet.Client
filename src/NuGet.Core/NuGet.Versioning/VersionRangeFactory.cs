@@ -140,19 +140,11 @@ namespace NuGet.Versioning
             return TryParse(value.AsSpan(), allowFloating, out versionRange);
         }
 
-        private static bool Asserted = false;
-
         /// <summary>
         /// Parses a VersionRange from its string representation.
         /// </summary>
         public static bool TryParse(ReadOnlySpan<char> value, bool allowFloating, [NotNullWhen(true)] out VersionRange? versionRange)
         {
-            if (!Asserted)
-            {
-                Asserted = true;
-                System.Diagnostics.Debugger.Launch();
-            }
-
             versionRange = null;
 
             var hash = GetHash(value, allowFloating);
