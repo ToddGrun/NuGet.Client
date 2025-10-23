@@ -454,7 +454,7 @@ namespace NuGet.Versioning.Test
         public void ParseVersionRangeWithNullThrows()
         {
             // Act & Assert
-            ExceptionAssert.ThrowsArgNull(() => VersionRange.Parse(null!), "value");
+            ExceptionAssert.ThrowsArgNull(() => VersionRange.Parse((string?)null!), "value");
         }
 
         [Theory]
@@ -658,7 +658,7 @@ namespace NuGet.Versioning.Test
             VersionRange? output;
 
             // Act
-            var parsed = VersionRange.TryParse(null!, out output);
+            var parsed = VersionRange.TryParse((string?)null!, out output);
 
             // Assert
             Assert.False(parsed);

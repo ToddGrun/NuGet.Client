@@ -163,40 +163,39 @@ namespace NuGet.Versioning
                 }
             }
 
-            var originalValue = value.ToString();
-            var trimmedValue = originalValue.Trim();
-            if (string.IsNullOrEmpty(trimmedValue))
+            var trimmedValue = value.Trim();
+            if (trimmedValue.IsEmpty)
             {
                 return false;
             }
 
-            var charArray = trimmedValue.ToCharArray();
+            var originalValue = value.ToString();
 
             // * is the only 1 char range
             if (allowFloating
-                && charArray.Length == 1
-                && charArray[0] == '*')
+                && trimmedValue.Length == 1
+                && trimmedValue[0] == '*')
             {
-                versionRange = new VersionRange(new NuGetVersion(0, 0, 0), true, null, true, FloatRange.Parse(trimmedValue), originalString: originalValue);
+                versionRange = new VersionRange(new NuGetVersion(0, 0, 0), true, null, true, FloatRange.Parse(trimmedValue.ToString()), originalString: originalValue);
 
                 UpdateCachedVersionRange(hash, originalValue, allowFloating, versionRange);
 
                 return true;
             }
 
-            string? minVersionString = null;
-            string? maxVersionString = null;
+            ReadOnlySpan<char> minVersionSpan = string.Empty.AsSpan();
+            ReadOnlySpan<char> maxVersionSpan = string.Empty.AsSpan();
             var isMinInclusive = false;
             var isMaxInclusive = false;
             NuGetVersion? minVersion = null;
             NuGetVersion? maxVersion = null;
             FloatRange? floatRange = null;
 
-            if (charArray[0] == '('
-                || charArray[0] == '[')
+            if (trimmedValue[0] == '('
+                || trimmedValue[0] == '[')
             {
                 // The first character must be [ to (
-                switch (charArray[0])
+                switch (trimmedValue[0])
                 {
                     case '[':
                         isMinInclusive = true;
@@ -209,7 +208,7 @@ namespace NuGet.Versioning
                 }
 
                 // The last character must be ] ot )
-                switch (charArray[charArray.Length - 1])
+                switch (trimmedValue[trimmedValue.Length - 1])
                 {
                     case ']':
                         isMaxInclusive = true;
@@ -222,45 +221,34 @@ namespace NuGet.Versioning
                 }
 
                 // Get rid of the two brackets
-                trimmedValue = trimmedValue.Substring(1, trimmedValue.Length - 2);
+                trimmedValue = trimmedValue.Slice(1, trimmedValue.Length - 2);
 
                 // Split by comma, and make sure we don't get more than two pieces
-                var parts = trimmedValue.Split(',');
+                var firstCommaIndex = trimmedValue.IndexOf(',');
+                var firstPart = firstCommaIndex >= 0 ? trimmedValue.Slice(0, firstCommaIndex) : trimmedValue;
+                var secondPart = firstCommaIndex >= 0 ? trimmedValue.Slice(firstCommaIndex + 1) : string.Empty.AsSpan();
 
-                if (parts.Length > 2)
+                if (secondPart.IndexOf(',') >= 0)
                 {
                     return false;
                 }
-                else
+
+                // If all parts are empty, then neither of upper or lower bounds were specified. Version spec is of the format (,]
+                if (firstPart.IsEmpty && secondPart.IsEmpty)
                 {
-                    var allEmpty = true;
-
-                    for (int i = 0; i < parts.Length; i++)
-                    {
-                        if (!string.IsNullOrEmpty(parts[i]))
-                        {
-                            allEmpty = false;
-                            break;
-                        }
-                    }
-
-                    // If all parts are empty, then neither of upper or lower bounds were specified. Version spec is of the format (,]
-                    if (allEmpty)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
 
                 // (1.0.0] and [1.0.0),(1.0.0) are invalid.
-                if (parts.Length == 1
+                if (firstCommaIndex == -1
                     && !(isMinInclusive && isMaxInclusive))
                 {
                     return false;
                 }
 
                 // If there is only one piece, we use it for both min and max
-                minVersionString = parts[0];
-                maxVersionString = (parts.Length == 2) ? parts[1] : parts[0];
+                minVersionSpan = firstPart;
+                maxVersionSpan = firstCommaIndex == -1 ? firstPart : secondPart;
             }
             else
             {
@@ -268,17 +256,15 @@ namespace NuGet.Versioning
                 isMinInclusive = true;
 
                 // use the entire value as the version
-                minVersionString = trimmedValue;
+                minVersionSpan = trimmedValue;
             }
 
-            if (!string.IsNullOrWhiteSpace(minVersionString))
+            if (!minVersionSpan.IsWhiteSpace())
             {
+                var minVersionString = minVersionSpan.ToString();
+
                 // parse the min version string
-#if NETCOREAPP2_1_OR_GREATER
-                if (allowFloating && minVersionString.Contains('*', StringComparison.Ordinal))
-#else
-                if (allowFloating && minVersionString.Contains("*"))
-#endif
+                if (allowFloating && minVersionSpan.IndexOf('*') >= 0)
                 {
                     // single floating version
                     if (FloatRange.TryParse(minVersionString, out floatRange)
@@ -304,8 +290,10 @@ namespace NuGet.Versioning
             }
 
             // parse the max version string, the max cannot float
-            if (!string.IsNullOrWhiteSpace(maxVersionString))
+            if (!maxVersionSpan.IsWhiteSpace())
             {
+                var maxVersionString = maxVersionSpan.ToString();
+
                 if (!NuGetVersion.TryParse(maxVersionString, out maxVersion))
                 {
                     // invalid version
